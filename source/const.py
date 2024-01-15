@@ -14,7 +14,7 @@ VALEUR = '&'
 TELEPORTATION = '!'
 NB_OBJETS = 6
 LES_OBJETS = '.$@~&!'
-
+MUR = '#'
 DIRECTIONS = 'NESO'
 
 NB_FAUX_MVT = 4

@@ -97,14 +97,15 @@ def pos_arrivee(plateau,pos,direction):
         None|tuple: None ou une paire d'entiers indiquant la position d'arrivée
     """
     pos_fin = None
-    if direction == "N":
-        pos_fin = pos_nord(plateau,pos)
-    elif direction == "S":
-        pos_fin = pos_sud(plateau,pos)
-    elif direction == "O":
-        pos_fin = pos_ouest(plateau,pos)
-    elif direction == "E":
-        pos_fin = pos_est(plateau,pos)
+    match direction:
+        case"N":
+            pos_fin = pos_nord(plateau,pos)
+        case "S":
+            pos_fin = pos_sud(plateau,pos)
+        case "O":
+            pos_fin = pos_ouest(plateau,pos)
+        case "E":
+            pos_fin = pos_est(plateau,pos)
     return pos_fin
 
 def get_case(plateau, pos):
@@ -162,6 +163,8 @@ def poser_objet(plateau, objet, pos):
     """
     case.poser_objet(get_case(plateau,pos),objet)
 
+chaine_random='20;30\n##############################\n.......##..........##.........\n######.##.#####.##.##.##.#####\n######.##.#####.##.##.##.#####\n#.........#####.##.##.##.#####\n..#######.......##.##.##......\n#.#######.#####.##....##.#####\n#.##......#####.########.#####\n#.##.####.##....########....##\n#.##.####.##.##..........##.##\n#......##.##.#####.##.#####.##\n######.##.##.#####.##.#####.##\n..####.##..........##.........\n#......##.#####.##.##.##.#####\n#.####.##.#####.##.##.##.#####\n#.####....##....##.##.##....##\n#...##.##.##.##.##.##.##.##.##\n..#.##.##....##..........##...\n###....#####....###..###....##\n##############################\n5\nA;1;2\nB;1;22\nC;3;6\nD;10;21\nE;16;1\n5\na;7;5\nb;10;1\nc;10;12\nd;7;5\ne;3;6\n'
+
 def plateau_from_str(la_chaine, complet=True):
     """Construit un plateau à partir d'une chaine de caractère contenant les informations
         sur le contenu du plateau (voir sujet)
@@ -172,28 +175,54 @@ def plateau_from_str(la_chaine, complet=True):
     Returns:
         dict: le plateau correspondant à la chaine. None si l'opération a échoué
     """
-    plateau = dict()
-    donnee = la_chaine.split(",")
-    plateau["proportion"] = (donnee[0] , donnee[1])
-    plateau["matrice"] = []
-    liste_pacman = []
-    liste_val = []
-    cpt = 0
-    for val in range(2,donnee[0]*donnee[1]):
-        liste_val.append(donnee[val])
-    for x in range(donnee[0]):
-        liste = []
-        for y in range(donnee[1]):
-            liste.append(liste_val[cpt])
-            cpt += 1
-        plateau["matrice"].append(liste)
-    
-        
-        
-            
-        
+    plateau=dict()
+    chaine=la_chaine.split("\n")
+    proportions=chaine[0].split(';')
+    proportions=[int(i)for i in proportions]
+    plateau['proportion']=(proportions[0],proportions[1])
+    matrice=[]
+    for mat in range(1,proportions[0]+1):
+        la_ligne=chaine[mat]
+        ligne=[]
+        for cara in la_ligne:
+            match cara:
+                case "#":
+                    nouvelle_case = case.Case(True)
+                case ".":
+                    nouvelle_case = case.Case(objet=const.VITAMINE)
+                case "$":
+                    nouvelle_case = case.Case(objet=const.GLOUTON)
+                case "@":
+                    nouvelle_case = case.Case(objet=const.IMMOBILITE)
+                case "~":
+                    nouvelle_case = case.Case(objet=const.PASSEMURAILLE)
+                case "!":
+                    nouvelle_case = case.Case(objet=const.TELEPORTATION)
+                case "&":
+                    nouvelle_case = case.Case(objet=const.VALEUR)
+                case " ":
+                    nouvelle_case = case.Case()
+            ligne.append(nouvelle_case)
+        matrice.append(ligne)
 
-    
+    plateau["matrice"]=matrice
+    plateau["pacmans"]=dict()
+    plateau["fantomes"]=dict()
+    nb_pacs=int(chaine[1+proportions[0]])
+    nb_fant=int(chaine[2+proportions[0]+nb_pacs])
+    for _ in range(nb_pacs):
+        pacman=chaine[2+proportions[0]+_].split(";")
+        plateau["pacmans"][pacman[0]]=(int(pacman[1]),int(pacman[2]))
+        plateau["matrice"][int(pacman[1])][int(pacman[2])]=pacman[0]
+        
+    for _ in range(nb_fant):
+        fantome=chaine[3+proportions[0]+nb_pacs+_].split(";")
+        plateau["fantomes"][fantome[0]]=(int(fantome[1]),int(fantome[2]))
+        plateau["matrice"][int(fantome[1])][int(fantome[2])]=fantome[0]
+    return plateau
+
+
+
 def Plateau(plan):
     """Créer un plateau en respectant le plan donné en paramètre.
         Le plan est une chaine de caractères contenant
@@ -207,40 +236,7 @@ def Plateau(plan):
     Returns:
         dict: Le plateau correspondant au plan
     """
-    plateau={"proportion":None,"matrice":[],"pacmans":dict(),"fantomes":dict()}
-    lignes=0
-    colonnes=0 
-    une_ligne=[]
-    i=0
-    while i<len(plan):
-        caractere=plan[i]
-        match caractere:
-            case '#':
-                une_ligne.append(case.Case(mur=True))
-
-            case ' ':
-                une_ligne.append(case.Case())
-
-            case caractere.isalpha():
-                nouvelle_case=case.Case()
-                if caractere.isupper():
-                    case.poser_pacman(nouvelle_case,caractere)
-                    plateau["pacmans"][caractere]=(lignes,colonnes)
-                else:
-                    case.poser_fantome(nouvelle_case,caractere)
-                    plateau["fantomes"][caractere]=(lignes,colonnes)
-                une_ligne.append(nouvelle_case)
-
-            case "\\":
-                i+=1
-                lignes+=1
-                plateau["matrice"].append(une_ligne)
-                une_ligne=[]
-
-        if lignes==0:
-            colonnes+=1
-        i+=1
-    plateau["proportion"]=(lignes,colonnes)
+    return plateau_from_str(plan)
 
 def set_case(plateau, pos, une_case):
     """remplace la case qui se trouve en position pos du plateau par une_case
@@ -315,9 +311,13 @@ def deplacer_pacman(plateau, pacman, pos, direction, passemuraille=False):
     """
     new_pos=pos_arrivee(plateau,pos,direction)
     new_case=get_case(plateau,new_pos)
-    if new_pos!=None and (passemuraille and case.est_mur(new_case)):
-        pass    
-    
+    if new_pos!=None and (not case.est_mur(new_case) or passemuraille):
+        enlever_pacman(plateau,pacman,pos)
+        case.poser_pacman(new_case,pacman)
+        return new_pos
+    else:
+        return None
+
 
 def deplacer_fantome(plateau, fantome, pos, direction):
     """Déplace dans la direction indiquée un fantome se trouvant en position pos
@@ -333,7 +333,14 @@ def deplacer_fantome(plateau, fantome, pos, direction):
         (int,int): une paire (lig,col) indiquant la position d'arrivée du fantome
                    None si le joueur n'a pas pu se déplacer
     """
-    pass
+    new_pos=pos_arrivee(plateau,pos,direction)
+    new_case=get_case(plateau,new_pos)
+    if new_pos!=None and not case.est_mur(new_case):
+        enlever_fantome(plateau,fantome,pos)
+        case.poser_fantome(new_case,fantome)
+        return new_pos
+    else:
+        return None
 
 def case_vide(plateau):
     """choisi aléatoirement sur la plateau une case qui n'est pas un mur et qui
@@ -345,7 +352,14 @@ def case_vide(plateau):
     Returns:
         (int,int): la position choisie
     """
-    pass
+    lignes=get_nb_lignes(plateau)
+    colonnes=get_nb_colonnes(plateau)
+    new_x=random.randint(0,lignes)
+    new_y=random.randint(0,colonnes)
+    while case.est_mur(get_case(plateau,(new_x,new_y))):
+        new_x=random.randint(0,lignes)
+        new_y=random.randint(0,colonnes)
+    return (new_x,new_y)
 
 
 def directions_possibles(plateau,pos,passemuraille=False):
@@ -361,12 +375,48 @@ def directions_possibles(plateau,pos,passemuraille=False):
         str: une chaine de caractères indiquant les directions possibles
               à partir de pos
     """
-    pass
+    directions_pos=""
+    for direction in "NESO":
+        new_pos=pos_arrivee(plateau,pos,direction)
+        if not case.est_mur(get_case(plateau,new_pos)) or passemuraille:
+            directions_pos+=direction
+    return directions_pos
+
 #---------------------------------------------------------#
 
+def creation_calque(plateau,pos,direction,distance_max=-1):
+    lignes=get_nb_lignes(plateau)
+    colonnes=get_nb_colonnes(plateau)
+    calque=[[0 for j in range(colonnes)]for i in range(lignes)]
+    depart=pos_arrivee(plateau,pos,direction)
+    if distance_max==-1:
+        distance_max=lignes*colonnes
+    if depart!=None:
+        positions={depart}
+        innondation=1
+        while len(positions)!=0 or innondation<=distance_max:
+            pos_cases_voisines={}
+            for position in positions:
+                directions_vois=(directions_possibles(plateau,position))
+                for directions_ in directions_vois:
+                    new_pos=pos_arrivee(plateau,position,directions_)
+                    if calque[new_pos[0],new_pos[1]]!=0:
+                        pos_cases_voisines.add(new_pos)
+            positions={}
+            for voisins in pos_cases_voisines:
+                calque[voisins[0]][voisins[1]]=innondation
+                positions.add(voisins)
+            
+            innondation+=1
+            calque[depart[0]][depart[1]]=0
+            return calque
+    else:
+        return None
+   
+    
 
 def analyse_plateau(plateau, pos, direction, distance_max):
-    """calcul les distances entre la position pos est les différents objets et
+    """calcul les distances entre la position pos et les différents objets et
         joueurs du plateau si on commence par partir dans la direction indiquée
         en se limitant à la distance max. Si il n'est pas possible d'aller dans la
         direction indiquée à partir de pos, la fonction doit retourner None
@@ -384,7 +434,32 @@ def analyse_plateau(plateau, pos, direction, distance_max):
             S'il n'est pas possible d'aller dans la direction indiquée à partir de pos
             la fonction retourne None
     """ 
-    pass
+    lignes=get_nb_lignes(plateau)
+    colonnes=get_nb_colonnes(plateau)
+    calque=creation_calque(plateau,pos,direction,distance_max)
+    if calque!=None:
+        dico_distance=dict()
+        for i in range (lignes):
+            for j in range(colonnes):
+                valeur=calque[i][j]
+                pos=(i,j)
+                if valeur!=0:
+                    case_actuel=get_case(plateau,pos)
+                    pacmans=case.get_pacmans(case_actuel)
+                    fantomes=case.get_fantomes(case_actuel)
+                    objet=case.get_objet(case_actuel)
+                    if objet!=const.AUCUN:
+                        dico_distance["objets"]=dico_distance.get("objets",[]).append((valeur,objet))
+                    for pac in pacmans:
+                        dico_distance["pacmans"]=dico_distance.get("pacmans",[]).append((valeur,pac))
+                    for fan in fantomes:
+                        dico_distance["fantomes"]=dico_distance.get("fantomes",[]).append((valeur,fan))
+        return dico_distance
+    else:
+        return None
+                    
+    
+        
 
 def prochaine_intersection(plateau,pos,direction):
     """calcule la distance de la prochaine intersection
@@ -399,8 +474,27 @@ def prochaine_intersection(plateau,pos,direction):
         int: un entier indiquant la distance à la prochaine intersection
              -1 si la direction mène à un cul de sac.
     """
+    distance = 0
+    pos_debut = pos_arrivee(plateau,pos,direction)
+    pos_actuelle = pos_debut
+    new_calque = creation_calque(plateau,pos,direction)
+    if direction == 'E':
+        back = 'O'
+    if direction == 'O':
+        back = 'E'
+    if direction == 'S':
+        back = 'N'
+    if direction == 'N':
+        back = 'S'
+    while directions_possibles(plateau,pos_actuelle) == back+direction:
+        distance += 1
+        pos_actuelle = pos_arrivee(plateau,pos,direction)
+        
+    if directions_possibles(plateau,pos) == direction:   
+        distance = -1
     
-    pass
+    return distance
+    
 
 # A NE PAS DEMANDER
 def plateau_2_str(plateau):

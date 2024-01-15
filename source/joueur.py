@@ -49,14 +49,17 @@ def joueur_from_str(description):
     couleur, nb_points, nb_faux_mvt, pos_pacman_ligne, pos_pacman_colonne, pos_fantome_ligne,pos_fantome_colonne,duree_glout,duree_immo,duree_mur, nom = None,None,None,None,None,None,None,None,None,None,None
     desc = []
     desc = description.split(";")
-    couleur, nb_points, nb_faux_mvt, pos_pacman_ligne, pos_pacman_colonne, pos_fantome_ligne,pos_fantome_colonne, duree_glout,duree_immo,duree_mur, nom =  str(desc[0]), int(desc[1]),int(desc[2]),int(desc[3]),int(desc[4]),int(desc[5]),int(desc[6]),str(desc[7]),str(desc[8]),str(desc[9]), str(desc[10]) 
+    couleur, nb_points, nb_faux_mvt, pos_pacman_ligne, pos_pacman_colonne, pos_fantome_ligne,pos_fantome_colonne, duree_glout,duree_immo,duree_mur, nom =  str(desc[0]), int(desc[1]),int(desc[2]),int(desc[3]),int(desc[4]),int(desc[5]),int(desc[6]),int(desc[7]),int(desc[8]),int(desc[9]), str(desc[10]) 
     pos_pacman = (pos_pacman_ligne, pos_pacman_colonne)
     pos_fantome = (pos_fantome_ligne,pos_fantome_colonne)
 
     objets = dict()
-    objets[duree_glout]=0 
-    objets[duree_immo]=0
-    objets[duree_mur]=0
+    if duree_glout != 0:
+        objets[const.GLOUTON]= duree_glout
+    if duree_immo != 0:
+        objets[const.IMMOBILITE]=duree_immo
+    if duree_mur != 0:
+        objets[const.PASSEMURAILLE]=duree_mur
     
     dico_joueur = Joueur(couleur, nom, nb_points, nb_faux_mvt, pos_pacman, pos_fantome , objets)
     return dico_joueur
@@ -112,13 +115,7 @@ def get_objets(joueur):
     Returns:
         list(int): la liste des objets possédés par le joueur
     """
-    res =[]
-    liste = sorted(joueur['objets'])
-    for elem in liste:
-        res.append(elem)
-        # if elem in const.LES_OBJETS:
-        #     res.append(elem)
-    return res 
+    return sorted(joueur['objets'])
 
 def get_duree(joueur,objet):
     """retourne la duree de vie de l'objet possédé par le joueur
@@ -129,9 +126,8 @@ def get_duree(joueur,objet):
         int: un entier indiquant la durée de vie l'objet possédé par le joueur
             0 indique que le joueur n'a pas l'objet ou que celui-ci a une durée de vie de 0
     """
-    if joueur['objets'][objet] != 0 or joueur['objets'][objet] != None :
-        return joueur['objets'][objet]
-    return 0
+
+    return joueur.get('objets',{}).get(objet,0)
 
 def get_pos_pacman(joueur):
     """retourne la position du pacman du joueur. ATTENTION c'est la position stockée dans le
@@ -182,7 +178,8 @@ def add_points(joueur, quantite):
     Returns:
         int: le nouveau nombre de points du joueur
     """
-    return joueur["nb_points"] + quantite
+    joueur["nb_points"] += quantite
+    return joueur['nb_points']
 
 def faux_mouvement(joueur):
     """Enlève 1 au nombre de faux mouvements autorisés pour le joueur
@@ -192,7 +189,14 @@ def faux_mouvement(joueur):
     Returns:
         int: le nombre de faux mouvements autorisés restants
     """
-    return joueur['nb_faux_mouvements'] - 1
+    
+    joueur['nb_faux_mouvements'] = get_nb_faux_mvt(joueur) -1
+    if joueur['nb_faux_mouvements'] <=-2:
+        return 0
+    else:
+        return joueur['nb_faux_mouvements'] 
+    
+
 
 def reinit_faux_mouvements(joueur):
     """Réinitialise le nombre de faux mouvements autorisés pour le joueur
@@ -212,7 +216,17 @@ def ajouter_objet(joueur, objet):
         joueur (dict): le joueur considéré
         objet (int): l'objet considéré
     """
-    joueur['objets'][objet] = const.PROP_OBJET(objet)
+
+    # res = joueur['nb_points'] + const.PROP_OBJET[objet][0]
+    # add_points(joueur, res)
+    # joueur['objets'][objet] = const.PROP_OBJET[objet]
+   
+    duree_vie_objet = const.PROP_OBJET[objet][1]
+    points_gagnes = const.PROP_OBJET[objet][0]
+    
+    if duree_vie_objet > 0:
+        joueur['objets'][objet] = joueur.get('objets',{}).get(objet,0) + duree_vie_objet
+    joueur['nb_points'] += points_gagnes 
 
 
 
@@ -223,9 +237,9 @@ def maj_duree(joueur):
     Args:
         joueur (dict): le joueur considéré
     """
-    for objet in joueur['objets'].values():
-        if objet.values > 0:
-            joueur['objets'][objet]-=1
+    for nom_objet , duree in joueur['objets'].items():
+        if duree > 0:
+            joueur['objets'][nom_objet]= duree - 1
     
 
 
