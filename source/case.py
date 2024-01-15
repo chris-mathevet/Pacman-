@@ -142,11 +142,11 @@ def poser_pacman(case, pacman):
         case (dict): la case considérée
         pacman (str): identifiant du pacman à ajouter sur la case
     """
-    if not est_mur(case):
-        if pacman not in case["pacmans_presents"]:
-            case["pacmans_presents"].add(pacman)
-    else:
-        pass
+    pacmans=get_pacmans(case)
+    if pacman not in pacmans:
+        pacmans.add(pacman)
+        case["pacmans_presents"]=pacmans
+
 
 
 def prendre_pacman(case, pacman):
@@ -160,8 +160,10 @@ def prendre_pacman(case, pacman):
     Returns:
         bool: True si le joueur était bien sur la case et False sinon.
     """
-    if pacman in case["pacmans_presents"]:
-        case["pacmans_presents"].remove(pacman)
+    pacmans=get_pacmans(case)
+    if pacman in pacmans:
+        pacmans.remove(pacman)
+        case["pacmans_presents"]=pacmans
         return True
     else:
         return False
@@ -176,8 +178,10 @@ def poser_fantome(case, fantome):
         case (dict): la case considérée
         fantome (str): identifiant du fantome à ajouter sur la case
     """
-    if not est_mur(case) and fantome not in get_fantomes(case):
-        get_fantomes(case).add(fantome)
+    fantomes=get_fantomes(case)
+    if not est_mur(case) and fantome not in fantomes:
+        fantomes.add(fantome)
+        case["fantomes_presents"]=fantomes
         
 
 
@@ -193,8 +197,10 @@ def prendre_fantome(case, fantome):
     Returns:
         bool: True si le fantome était bien sur la case et False sinon.
     """
-    if fantome in case["fantomes_presents"]:
-        case["fantomes_presents"].remove(fantome)
+    fantomes=get_fantomes(case)
+    if fantome in fantomes:
+        fantomes.remove(fantome)
+        case["fantomes_presents"]=fantomes
         return True
     else:
         return False

@@ -22,7 +22,7 @@ def get_nb_lignes(plateau):
     Returns:
         int: le nombre de lignes du plateau
     """
-    pass
+    return plateau["proportion"][0]
 
 
 def get_nb_colonnes(plateau):
@@ -34,7 +34,7 @@ def get_nb_colonnes(plateau):
     Returns:
         int: le nombre de colonnes du plateau
     """
-    pass
+    return plateau["proportion"][1]
 
 def pos_ouest(plateau, pos):
     """retourne la position de la case à l'ouest de pos
@@ -45,7 +45,8 @@ def pos_ouest(plateau, pos):
     Returns:
         int: un tuple d'entiers
     """
-    pass
+    ligne = get_nb_lignes(plateau)
+    return (pos[0],pos[1]-1%ligne)
 
 def pos_est(plateau, pos):
     """retourne la position de la case à l'est de pos
@@ -56,7 +57,8 @@ def pos_est(plateau, pos):
     Returns:
         int: un tuple d'entiers
     """
-    pass
+    ligne = get_nb_lignes(plateau)
+    return (pos[0],pos[1]+1%ligne)
 
 def pos_nord(plateau, pos):
     """retourne la position de la case au nord de pos
@@ -67,7 +69,8 @@ def pos_nord(plateau, pos):
     Returns:
         int: un tuple d'entiers
     """
-    pass
+    colonne = get_nb_colonnes(plateau)
+    return (pos[0]-1%colonne,pos[1])
 
 def pos_sud(plateau, pos):
     """retourne la position de la case au sud de pos
@@ -78,7 +81,8 @@ def pos_sud(plateau, pos):
     Returns:
         int: un tuple d'entiers
     """
-    pass
+    colonne = get_nb_colonnes(plateau)
+    return ((pos[0]+1)%colonne,pos[1])
 
 def pos_arrivee(plateau,pos,direction):
     """ calcule la position d'arrivée si on part de pos et qu'on va dans
@@ -92,7 +96,16 @@ def pos_arrivee(plateau,pos,direction):
     Returns:
         None|tuple: None ou une paire d'entiers indiquant la position d'arrivée
     """
-    pass
+    pos_fin = None
+    if direction == "N":
+        pos_fin = pos_nord(plateau,pos)
+    elif direction == "S":
+        pos_fin = pos_sud(plateau,pos)
+    elif direction == "O":
+        pos_fin = pos_ouest(plateau,pos)
+    elif direction == "E":
+        pos_fin = pos_est(plateau,pos)
+    return pos_fin
 
 def get_case(plateau, pos):
     """retourne la case qui se trouve à la position pos du plateau
@@ -104,7 +117,7 @@ def get_case(plateau, pos):
     Returns:
         dict: La case qui se situe à la position pos du plateau
     """
-    pass
+    return plateau["matrice"][pos[0]][pos[1]]
 
 def get_objet(plateau, pos):
     """retourne l'objet qui se trouve à la position pos du plateau
@@ -116,7 +129,7 @@ def get_objet(plateau, pos):
     Returns:
         str: le caractère symbolisant l'objet
     """
-    pass
+    get_case(plateau,pos)["objet"]
 
 def poser_pacman(plateau, pacman, pos):
     """pose un pacman en position pos sur le plateau
@@ -126,7 +139,7 @@ def poser_pacman(plateau, pacman, pos):
         pacman (str): la lettre représentant le pacman
         pos (tuple): une paire (lig,col) de deux int
     """
-    pass
+    case.poser_pacman(get_case(plateau,pos),pacman)
 
 def poser_fantome(plateau, fantome, pos):
     """pose un fantome en position pos sur le plateau
@@ -136,7 +149,7 @@ def poser_fantome(plateau, fantome, pos):
         fantome (str): la lettre représentant le fantome
         pos (tuple): une paire (lig,col) de deux int
     """
-    pass
+    case.poser_fantome(get_case(plateau,pos),fantome)
 
 def poser_objet(plateau, objet, pos):
     """Pose un objet en position pos sur le plateau. Si cette case contenait déjà
@@ -147,7 +160,7 @@ def poser_objet(plateau, objet, pos):
         objet (int): un entier représentant l'objet. const.AUCUN indique aucun objet
         pos (tuple): une paire (lig,col) de deux int
     """
-    pass
+    case.poser_objet(get_case(plateau,pos),objet)
 
 def plateau_from_str(la_chaine, complet=True):
     """Construit un plateau à partir d'une chaine de caractère contenant les informations
@@ -159,8 +172,28 @@ def plateau_from_str(la_chaine, complet=True):
     Returns:
         dict: le plateau correspondant à la chaine. None si l'opération a échoué
     """
-    pass
+    plateau = dict()
+    donnee = la_chaine.split(",")
+    plateau["proportion"] = (donnee[0] , donnee[1])
+    plateau["matrice"] = []
+    liste_pacman = []
+    liste_val = []
+    cpt = 0
+    for val in range(2,donnee[0]*donnee[1]):
+        liste_val.append(donnee[val])
+    for x in range(donnee[0]):
+        liste = []
+        for y in range(donnee[1]):
+            liste.append(liste_val[cpt])
+            cpt += 1
+        plateau["matrice"].append(liste)
+    
+        
+        
+            
+        
 
+    
 def Plateau(plan):
     """Créer un plateau en respectant le plan donné en paramètre.
         Le plan est une chaine de caractères contenant
@@ -174,8 +207,40 @@ def Plateau(plan):
     Returns:
         dict: Le plateau correspondant au plan
     """
-    pass
+    plateau={"proportion":None,"matrice":[],"pacmans":dict(),"fantomes":dict()}
+    lignes=0
+    colonnes=0 
+    une_ligne=[]
+    i=0
+    while i<len(plan):
+        caractere=plan[i]
+        match caractere:
+            case '#':
+                une_ligne.append(case.Case(mur=True))
 
+            case ' ':
+                une_ligne.append(case.Case())
+
+            case caractere.isalpha():
+                nouvelle_case=case.Case()
+                if caractere.isupper():
+                    case.poser_pacman(nouvelle_case,caractere)
+                    plateau["pacmans"][caractere]=(lignes,colonnes)
+                else:
+                    case.poser_fantome(nouvelle_case,caractere)
+                    plateau["fantomes"][caractere]=(lignes,colonnes)
+                une_ligne.append(nouvelle_case)
+
+            case "\\":
+                i+=1
+                lignes+=1
+                plateau["matrice"].append(une_ligne)
+                une_ligne=[]
+
+        if lignes==0:
+            colonnes+=1
+        i+=1
+    plateau["proportion"]=(lignes,colonnes)
 
 def set_case(plateau, pos, une_case):
     """remplace la case qui se trouve en position pos du plateau par une_case
@@ -185,7 +250,7 @@ def set_case(plateau, pos, une_case):
         pos (tuple): une paire (lig,col) de deux int
         une_case (dict): la nouvelle case
     """
-    pass
+    plateau["matrice"][pos[0]][pos[1]]=une_case
 
 
 
@@ -201,7 +266,7 @@ def enlever_pacman(plateau, pacman, pos):
     Returns:
         bool: True si l'opération s'est bien déroulée, False sinon
     """
-    pass
+    return case.prendre_pacman(get_case(plateau,pos),pacman)
 
 
 def enlever_fantome(plateau, fantome, pos):
@@ -215,7 +280,7 @@ def enlever_fantome(plateau, fantome, pos):
     Returns:
         bool: True si l'opération s'est bien déroulée, False sinon
     """
-    pass
+    return case.prendre_fantome(get_case(plateau,pos),fantome)
 
 
 def prendre_objet(plateau, pos):
@@ -230,7 +295,7 @@ def prendre_objet(plateau, pos):
         int: l'entier représentant l'objet qui se trouvait sur la case.
         const.AUCUN indique aucun objet
     """
-    pass
+    return case.prendre_objet(get_case(plateau,pos))
 
         
 def deplacer_pacman(plateau, pacman, pos, direction, passemuraille=False):
@@ -248,7 +313,11 @@ def deplacer_pacman(plateau, pacman, pos, direction, passemuraille=False):
         (int,int): une paire (lig,col) indiquant la position d'arrivée du pacman 
                    (None si le pacman n'a pas pu se déplacer)
     """
-    pass
+    new_pos=pos_arrivee(plateau,pos,direction)
+    new_case=get_case(plateau,new_pos)
+    if new_pos!=None and (passemuraille and case.est_mur(new_case)):
+        pass    
+    
 
 def deplacer_fantome(plateau, fantome, pos, direction):
     """Déplace dans la direction indiquée un fantome se trouvant en position pos
