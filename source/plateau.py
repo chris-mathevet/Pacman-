@@ -82,7 +82,7 @@ def pos_sud(plateau, pos):
         int: un tuple d'entiers
     """
     colonne = get_nb_colonnes(plateau)
-    return ((pos[0]+1)%colonne,pos[1])
+    return (pos[0]+1%colonne,pos[1])
 
 def pos_arrivee(plateau,pos,direction):
     """ calcule la position d'arrivée si on part de pos et qu'on va dans
@@ -163,7 +163,7 @@ def poser_objet(plateau, objet, pos):
     """
     case.poser_objet(get_case(plateau,pos),objet)
 
-chaine_random='20;30\n##############################\n.......##..........##.........\n######.##.#####.##.##.##.#####\n######.##.#####.##.##.##.#####\n#.........#####.##.##.##.#####\n..#######.......##.##.##......\n#.#######.#####.##....##.#####\n#.##......#####.########.#####\n#.##.####.##....########....##\n#.##.####.##.##..........##.##\n#......##.##.#####.##.#####.##\n######.##.##.#####.##.#####.##\n..####.##..........##.........\n#......##.#####.##.##.##.#####\n#.####.##.#####.##.##.##.#####\n#.####....##....##.##.##....##\n#...##.##.##.##.##.##.##.##.##\n..#.##.##....##..........##...\n###....#####....###..###....##\n##############################\n5\nA;1;2\nB;1;22\nC;3;6\nD;10;21\nE;16;1\n5\na;7;5\nb;10;1\nc;10;12\nd;7;5\ne;3;6\n'
+random_chaine="20;30\n##############################\n.......##..........##.........\n######.##.#####.##.##.##.#####\n######.##.#####.##.##.##.#####\n#.........#####.##.##.##.#####\n..#######.......##.##.##......\n#.#######.#####.##....##.#####\n#.##......#####.########.#####\n#.##.####.##....########....##\n#.##.####.##.##..........##.##\n#......##.##.#####.##.#####.##\n######.##.##.#####.##.#####.##\n..####.##..........##.........\n#......##.#####.##.##.##.#####\n#.####.##.#####.##.##.##.#####\n#.####....##....##.##.##....##\n#...##.##.##.##.##.##.##.##.##\n..#.##.##....##..........##...\n###....#####....###..###....##\n##############################\n5\nA;1;2\nB;1;22\nC;3;6\nD;10;21\nE;16;1\n5\na;7;5\nb;10;1\nc;10;12\nd;7;5\ne;3;6\n"
 
 def plateau_from_str(la_chaine, complet=True):
     """Construit un plateau à partir d'une chaine de caractère contenant les informations
@@ -213,15 +213,14 @@ def plateau_from_str(la_chaine, complet=True):
     for _ in range(nb_pacs):
         pacman=chaine[2+proportions[0]+_].split(";")
         plateau["pacmans"][pacman[0]]=(int(pacman[1]),int(pacman[2]))
-        plateau["matrice"][int(pacman[1])][int(pacman[2])]=pacman[0]
-        
+        case.poser_pacman(plateau["matrice"][int(pacman[1])][int(pacman[2])],pacman[0])
     for _ in range(nb_fant):
         fantome=chaine[3+proportions[0]+nb_pacs+_].split(";")
         plateau["fantomes"][fantome[0]]=(int(fantome[1]),int(fantome[2]))
-        plateau["matrice"][int(fantome[1])][int(fantome[2])]=fantome[0]
+        case.poser_fantome(plateau["matrice"][int(fantome[1])][int(fantome[2])],fantome[0])
     return plateau
 
-
+plateau_from_str(random_chaine)
 
 def Plateau(plan):
     """Créer un plateau en respectant le plan donné en paramètre.
@@ -310,13 +309,12 @@ def deplacer_pacman(plateau, pacman, pos, direction, passemuraille=False):
                    (None si le pacman n'a pas pu se déplacer)
     """
     new_pos=pos_arrivee(plateau,pos,direction)
-    new_case=get_case(plateau,new_pos)
-    if new_pos!=None and (not case.est_mur(new_case) or passemuraille):
-        enlever_pacman(plateau,pacman,pos)
-        case.poser_pacman(new_case,pacman)
-        return new_pos
-    else:
-        return None
+    if new_pos!=None:
+        new_case=get_case(plateau,new_pos)
+        if not case.est_mur(new_case) or passemuraille:
+            enlever_pacman(plateau,pacman,pos)
+            case.poser_pacman(new_case,pacman)
+    return new_pos
 
 
 def deplacer_fantome(plateau, fantome, pos, direction):
@@ -334,7 +332,8 @@ def deplacer_fantome(plateau, fantome, pos, direction):
                    None si le joueur n'a pas pu se déplacer
     """
     new_pos=pos_arrivee(plateau,pos,direction)
-    new_case=get_case(plateau,new_pos)
+    if new_pos!=None:
+        new_case=get_case(plateau,new_pos)
     if new_pos!=None and not case.est_mur(new_case):
         enlever_fantome(plateau,fantome,pos)
         case.poser_fantome(new_case,fantome)
@@ -400,7 +399,7 @@ def creation_calque(plateau,pos,direction,distance_max=-1):
                 directions_vois=(directions_possibles(plateau,position))
                 for directions_ in directions_vois:
                     new_pos=pos_arrivee(plateau,position,directions_)
-                    if calque[new_pos[0],new_pos[1]]!=0:
+                    if calque[new_pos[0]][new_pos[1]]!=0:
                         pos_cases_voisines.add(new_pos)
             positions={}
             for voisins in pos_cases_voisines:
@@ -477,20 +476,11 @@ def prochaine_intersection(plateau,pos,direction):
     distance = 0
     pos_debut = pos_arrivee(plateau,pos,direction)
     pos_actuelle = pos_debut
-    new_calque = creation_calque(plateau,pos,direction)
-    if direction == 'E':
-        back = 'O'
-    if direction == 'O':
-        back = 'E'
-    if direction == 'S':
-        back = 'N'
-    if direction == 'N':
-        back = 'S'
-    while directions_possibles(plateau,pos_actuelle) == back+direction:
+    while len(directions_possibles(plateau,pos_actuelle)) == 2:
         distance += 1
-        pos_actuelle = pos_arrivee(plateau,pos,direction)
+        pos_actuelle = pos_arrivee(plateau,pos_actuelle,direction)
         
-    if directions_possibles(plateau,pos) == direction:   
+    if directions_possibles(plateau,pos_actuelle) == direction:   
         distance = -1
     
     return distance
