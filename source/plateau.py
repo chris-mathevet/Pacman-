@@ -45,8 +45,9 @@ def pos_ouest(plateau, pos):
     Returns:
         int: un tuple d'entiers
     """
-    ligne = get_nb_lignes(plateau)
-    return (pos[0],pos[1]-1%ligne)
+    colonne = get_nb_colonnes(plateau)
+    return (pos[0],(pos[1]-1)%colonne)
+
 
 def pos_est(plateau, pos):
     """retourne la position de la case à l'est de pos
@@ -57,8 +58,8 @@ def pos_est(plateau, pos):
     Returns:
         int: un tuple d'entiers
     """
-    ligne = get_nb_lignes(plateau)
-    return (pos[0],pos[1]+1%ligne)
+    colonne = get_nb_colonnes(plateau)
+    return (pos[0],(pos[1]+1)%colonne)
 
 def pos_nord(plateau, pos):
     """retourne la position de la case au nord de pos
@@ -69,8 +70,8 @@ def pos_nord(plateau, pos):
     Returns:
         int: un tuple d'entiers
     """
-    colonne = get_nb_colonnes(plateau)
-    return (pos[0]-1%colonne,pos[1])
+    ligne = get_nb_lignes(plateau)
+    return ((pos[0]-1)%ligne,pos[1])
 
 def pos_sud(plateau, pos):
     """retourne la position de la case au sud de pos
@@ -81,8 +82,9 @@ def pos_sud(plateau, pos):
     Returns:
         int: un tuple d'entiers
     """
-    colonne = get_nb_colonnes(plateau)
-    return (pos[0]+1%colonne,pos[1])
+    ligne = get_nb_lignes(plateau)
+    return ((pos[0]+1)%ligne,pos[1])
+
 
 def pos_arrivee(plateau,pos,direction):
     """ calcule la position d'arrivée si on part de pos et qu'on va dans
@@ -311,9 +313,11 @@ def deplacer_pacman(plateau, pacman, pos, direction, passemuraille=False):
     new_pos=pos_arrivee(plateau,pos,direction)
     if new_pos!=None:
         new_case=get_case(plateau,new_pos)
-        if not case.est_mur(new_case) or passemuraille:
+        if (not case.est_mur(new_case)) or passemuraille:
             enlever_pacman(plateau,pacman,pos)
             case.poser_pacman(new_case,pacman)
+        else:
+            new_pos=None
     return new_pos
 
 
@@ -334,12 +338,12 @@ def deplacer_fantome(plateau, fantome, pos, direction):
     new_pos=pos_arrivee(plateau,pos,direction)
     if new_pos!=None:
         new_case=get_case(plateau,new_pos)
-    if new_pos!=None and not case.est_mur(new_case):
-        enlever_fantome(plateau,fantome,pos)
-        case.poser_fantome(new_case,fantome)
-        return new_pos
-    else:
-        return None
+        if not case.est_mur(new_case):
+            enlever_fantome(plateau,fantome,pos)
+            case.poser_fantome(new_case,fantome)
+        else:
+            new_pos=None
+    return new_pos
 
 def case_vide(plateau):
     """choisi aléatoirement sur la plateau une case qui n'est pas un mur et qui
