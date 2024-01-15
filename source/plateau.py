@@ -165,8 +165,6 @@ def poser_objet(plateau, objet, pos):
     """
     case.poser_objet(get_case(plateau,pos),objet)
 
-random_chaine="20;30\n##############################\n.......##..........##.........\n######.##.#####.##.##.##.#####\n######.##.#####.##.##.##.#####\n#.........#####.##.##.##.#####\n..#######.......##.##.##......\n#.#######.#####.##....##.#####\n#.##......#####.########.#####\n#.##.####.##....########....##\n#.##.####.##.##..........##.##\n#......##.##.#####.##.#####.##\n######.##.##.#####.##.#####.##\n..####.##..........##.........\n#......##.#####.##.##.##.#####\n#.####.##.#####.##.##.##.#####\n#.####....##....##.##.##....##\n#...##.##.##.##.##.##.##.##.##\n..#.##.##....##..........##...\n###....#####....###..###....##\n##############################\n5\nA;1;2\nB;1;22\nC;3;6\nD;10;21\nE;16;1\n5\na;7;5\nb;10;1\nc;10;12\nd;7;5\ne;3;6\n"
-
 def plateau_from_str(la_chaine, complet=True):
     """Construit un plateau à partir d'une chaine de caractère contenant les informations
         sur le contenu du plateau (voir sujet)
@@ -180,11 +178,11 @@ def plateau_from_str(la_chaine, complet=True):
     plateau=dict()
     chaine=la_chaine.split("\n")
     proportions=chaine[0].split(';')
-    proportions=[int(i)for i in proportions]
+    proportions=[int(nb)for nb in proportions]
     plateau['proportion']=(proportions[0],proportions[1])
     matrice=[]
-    for mat in range(1,proportions[0]+1):
-        la_ligne=chaine[mat]
+    for indice_mat in range(1,proportions[0]+1):
+        la_ligne=chaine[indice_mat]
         ligne=[]
         for cara in la_ligne:
             match cara:
@@ -212,17 +210,15 @@ def plateau_from_str(la_chaine, complet=True):
     plateau["fantomes"]=dict()
     nb_pacs=int(chaine[1+proportions[0]])
     nb_fant=int(chaine[2+proportions[0]+nb_pacs])
-    for _ in range(nb_pacs):
-        pacman=chaine[2+proportions[0]+_].split(";")
+    for pacmans in range(nb_pacs):
+        pacman=chaine[2+proportions[0]+pacmans].split(";")
         plateau["pacmans"][pacman[0]]=(int(pacman[1]),int(pacman[2]))
         case.poser_pacman(plateau["matrice"][int(pacman[1])][int(pacman[2])],pacman[0])
-    for _ in range(nb_fant):
-        fantome=chaine[3+proportions[0]+nb_pacs+_].split(";")
+    for fantomes in range(nb_fant):
+        fantome=chaine[3+proportions[0]+nb_pacs+fantomes].split(";")
         plateau["fantomes"][fantome[0]]=(int(fantome[1]),int(fantome[2]))
         case.poser_fantome(plateau["matrice"][int(fantome[1])][int(fantome[2])],fantome[0])
     return plateau
-
-plateau_from_str(random_chaine)
 
 def Plateau(plan):
     """Créer un plateau en respectant le plan donné en paramètre.
@@ -248,9 +244,6 @@ def set_case(plateau, pos, une_case):
         une_case (dict): la nouvelle case
     """
     plateau["matrice"][pos[0]][pos[1]]=une_case
-
-
-
 
 def enlever_pacman(plateau, pacman, pos):
     """enlève un joueur qui se trouve en position pos sur le plateau
@@ -387,13 +380,25 @@ def directions_possibles(plateau,pos,passemuraille=False):
 
 #---------------------------------------------------------#
 
-def creation_calque(plateau,pos,direction,distance_max=-1):
+def creation_calque(plateau,pos,direction,distance_max):
+    """FONCTION RAJOUTEE
+       Creer un calque sur le principe de l'innondation, 
+       à partir de pos en commençant par partir dans la 
+       direction indiquée en se limitant à la distance max.
+
+    Args:
+        plateau (dict): le plateau considéré
+        pos (tuple): une paire d'entiers indiquant la postion de calcul des distances
+        distance_max (int): un entier indiquant la distance limite de la recherche
+        direction (str): un des caractère NSEO donnant la direction du déplacement
+
+    Returns:
+        list: matrice du calque ou None si le calque n'est pas réalisable
+    """    
     lignes=get_nb_lignes(plateau)
     colonnes=get_nb_colonnes(plateau)
-    calque=[[0 for j in range(colonnes)]for i in range(lignes)]
+    calque=[[0 for __ in range(colonnes)]for _ in range(lignes)]
     depart=pos_arrivee(plateau,pos,direction)
-    if distance_max==-1:
-        distance_max=lignes*colonnes
     if depart!=None:
         positions={depart}
         innondation=1
