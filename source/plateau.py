@@ -518,7 +518,9 @@ def analyse_plateau(plateau, pos, direction, distance_max,passemuraille=False):
         return dico_distance
     else:
         return None
-                    
+
+      
+
 def oppose(direction):
     if direction == 'N':
         return 'S'

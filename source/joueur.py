@@ -46,12 +46,9 @@ def joueur_from_str(description):
     Returns:
         dict: le joueur ayant les caractéristiques décrite dans la chaine.
     """
-    couleur, nb_points, nb_faux_mvt, pos_pacman_ligne, pos_pacman_colonne, pos_fantome_ligne,pos_fantome_colonne,duree_glout,duree_immo,duree_mur, nom = None,None,None,None,None,None,None,None,None,None,None
     desc = []
     desc = description.split(";")
     couleur, nb_points, nb_faux_mvt, pos_pacman_ligne, pos_pacman_colonne, pos_fantome_ligne,pos_fantome_colonne, duree_glout,duree_immo,duree_mur, nom =  str(desc[0]), int(desc[1]),int(desc[2]),int(desc[3]),int(desc[4]),int(desc[5]),int(desc[6]),int(desc[7]),int(desc[8]),int(desc[9]), str(desc[10]) 
-    pos_pacman = (pos_pacman_ligne, pos_pacman_colonne)
-    pos_fantome = (pos_fantome_ligne,pos_fantome_colonne)
 
     objets = dict()
     if duree_glout != 0:
@@ -61,8 +58,7 @@ def joueur_from_str(description):
     if duree_mur != 0:
         objets[const.PASSEMURAILLE]=duree_mur
     
-    dico_joueur = Joueur(couleur, nom, nb_points, nb_faux_mvt, pos_pacman, pos_fantome , objets)
-    return dico_joueur
+    return Joueur(couleur, nom, nb_points, nb_faux_mvt, (pos_pacman_ligne, pos_pacman_colonne), (pos_fantome_ligne,pos_fantome_colonne) , objets)
     
 
 def get_couleur(joueur):

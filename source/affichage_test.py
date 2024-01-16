@@ -334,7 +334,7 @@ if __name__ == '__main__':
                 " # ### ##  # #  \n"+\
                 " # # # #   ###  \n"
     plan4=""
-    with open("./cartes/test1.txt") as fic:
+    with open("./cartes/test3.txt") as fic:
         plan4=fic.read()
     plat=plateau.plateau_from_str(plan4,True)
     print(plateau.get_nb_colonnes(plat),plateau.get_nb_lignes(plat))

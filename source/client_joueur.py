@@ -20,6 +20,10 @@ import plateau
 import case
 import joueur
 
+import fantomes
+import pacman
+
+
 prec='X'
 
 def mon_IA(ma_couleur,carac_jeu, plan, les_joueurs):
