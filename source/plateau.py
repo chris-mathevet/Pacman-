@@ -233,7 +233,50 @@ def Plateau(plan):
     Returns:
         dict: Le plateau correspondant au plan
     """
-    return plateau_from_str(plan)
+    plateau=dict()
+    chaine=plan.split("\n")
+    proportions=chaine[0].split(';')
+    proportions=[int(nb)for nb in proportions]
+    plateau['proportion']=(proportions[0],proportions[1])
+    matrice=[]
+    for indice_mat in range(1,proportions[0]+1):
+        la_ligne=chaine[indice_mat]
+        ligne=[]
+        for cara in la_ligne:
+            match cara:
+                case "#":
+                    nouvelle_case = case.Case(True)
+                case ".":
+                    nouvelle_case = case.Case(objet=const.VITAMINE)
+                case "$":
+                    nouvelle_case = case.Case(objet=const.GLOUTON)
+                case "@":
+                    nouvelle_case = case.Case(objet=const.IMMOBILITE)
+                case "~":
+                    nouvelle_case = case.Case(objet=const.PASSEMURAILLE)
+                case "!":
+                    nouvelle_case = case.Case(objet=const.TELEPORTATION)
+                case "&":
+                    nouvelle_case = case.Case(objet=const.VALEUR)
+                case " ":
+                    nouvelle_case = case.Case()
+            ligne.append(nouvelle_case)
+        matrice.append(ligne)
+
+    plateau["matrice"]=matrice
+    plateau["pacmans"]=dict()
+    plateau["fantomes"]=dict()
+    nb_pacs=int(chaine[1+proportions[0]])
+    nb_fant=int(chaine[2+proportions[0]+nb_pacs])
+    for pacmans in range(nb_pacs):
+        pacman=chaine[2+proportions[0]+pacmans].split(";")
+        plateau["pacmans"][pacman[0]]=(int(pacman[1]),int(pacman[2]))
+        case.poser_pacman(plateau["matrice"][int(pacman[1])][int(pacman[2])],pacman[0])
+    for fantomes in range(nb_fant):
+        fantome=chaine[3+proportions[0]+nb_pacs+fantomes].split(";")
+        plateau["fantomes"][fantome[0]]=(int(fantome[1]),int(fantome[2]))
+        case.poser_fantome(plateau["matrice"][int(fantome[1])][int(fantome[2])],fantome[0])
+    return plateau
 
 def set_case(plateau, pos, une_case):
     """remplace la case qui se trouve en position pos du plateau par une_case
@@ -303,15 +346,21 @@ def deplacer_pacman(plateau, pacman, pos, direction, passemuraille=False):
         (int,int): une paire (lig,col) indiquant la position d'arrivée du pacman 
                    (None si le pacman n'a pas pu se déplacer)
     """
-    new_pos=pos_arrivee(plateau,pos,direction)
-    if new_pos!=None:
-        new_case=get_case(plateau,new_pos)
-        if (not case.est_mur(new_case)) or passemuraille:
-            enlever_pacman(plateau,pacman,pos)
-            case.poser_pacman(new_case,pacman)
-        else:
-            new_pos=None
-    return new_pos
+    
+    if pacman in case.get_pacmans(get_case(plateau,pos)):
+        new_pos=pos_arrivee(plateau,pos,direction)
+        if new_pos!=None :
+            new_case=get_case(plateau,new_pos)
+            if (not case.est_mur(new_case)) or passemuraille:
+                enlever_pacman(plateau,pacman,pos)
+                case.poser_pacman(new_case,pacman)
+            else:
+                new_pos=None
+        return new_pos
+    else:
+        return None
+    
+
 
 
 def deplacer_fantome(plateau, fantome, pos, direction):
@@ -328,15 +377,18 @@ def deplacer_fantome(plateau, fantome, pos, direction):
         (int,int): une paire (lig,col) indiquant la position d'arrivée du fantome
                    None si le joueur n'a pas pu se déplacer
     """
-    new_pos=pos_arrivee(plateau,pos,direction)
-    if new_pos!=None:
-        new_case=get_case(plateau,new_pos)
-        if not case.est_mur(new_case):
-            enlever_fantome(plateau,fantome,pos)
-            case.poser_fantome(new_case,fantome)
-        else:
-            new_pos=None
-    return new_pos
+    if fantome in case.get_fantomes(get_case(plateau,pos)):
+        new_pos=pos_arrivee(plateau,pos,direction)
+        if new_pos!=None:
+            new_case=get_case(plateau,new_pos)
+            if not case.est_mur(new_case):
+                enlever_fantome(plateau,fantome,pos)
+                case.poser_fantome(new_case,fantome)
+            else:
+                new_pos=None
+        return new_pos
+    else:
+        return None
 
 def case_vide(plateau):
     """choisi aléatoirement sur la plateau une case qui n'est pas un mur et qui
@@ -374,13 +426,13 @@ def directions_possibles(plateau,pos,passemuraille=False):
     directions_pos=""
     for direction in "NESO":
         new_pos=pos_arrivee(plateau,pos,direction)
-        if not case.est_mur(get_case(plateau,new_pos)) or passemuraille:
-            directions_pos+=direction
+        if (not case.est_mur(get_case(plateau,new_pos))) or passemuraille:      
+            directions_pos=directions_pos+direction
     return directions_pos
 
 #---------------------------------------------------------#
 
-def creation_calque(plateau,pos,direction,distance_max):
+def creation_calque(plateau,pos,direction,distance_max,passemuraille):
     """FONCTION RAJOUTEE
        Creer un calque sur le principe de l'innondation, 
        à partir de pos en commençant par partir dans la 
@@ -399,31 +451,29 @@ def creation_calque(plateau,pos,direction,distance_max):
     colonnes=get_nb_colonnes(plateau)
     calque=[[0 for __ in range(colonnes)]for _ in range(lignes)]
     depart=pos_arrivee(plateau,pos,direction)
-    if depart!=None:
+    calque[depart[0]][depart[1]]=1
+    if depart!=None and (not case.est_mur(get_case(plateau,depart))or passemuraille):
         positions={depart}
-        innondation=1
-        while len(positions)!=0 or innondation<=distance_max:
-            pos_cases_voisines={}
+        innondation=2
+        while len(positions)!=0 and innondation<=distance_max:
+            pos_cases_voisines=set()
             for position in positions:
-                directions_vois=(directions_possibles(plateau,position))
+                directions_vois=(directions_possibles(plateau,position,passemuraille))
                 for directions_ in directions_vois:
                     new_pos=pos_arrivee(plateau,position,directions_)
-                    if calque[new_pos[0]][new_pos[1]]!=0:
+                    if calque[new_pos[0]][new_pos[1]]==0:
                         pos_cases_voisines.add(new_pos)
-            positions={}
+            positions=set()
             for voisins in pos_cases_voisines:
                 calque[voisins[0]][voisins[1]]=innondation
                 positions.add(voisins)
-            
             innondation+=1
-            calque[depart[0]][depart[1]]=0
-            return calque
+        
+        return calque
     else:
         return None
-   
-    
 
-def analyse_plateau(plateau, pos, direction, distance_max):
+def analyse_plateau(plateau, pos, direction, distance_max,passemuraille=False):
     """calcul les distances entre la position pos et les différents objets et
         joueurs du plateau si on commence par partir dans la direction indiquée
         en se limitant à la distance max. Si il n'est pas possible d'aller dans la
@@ -444,7 +494,7 @@ def analyse_plateau(plateau, pos, direction, distance_max):
     """ 
     lignes=get_nb_lignes(plateau)
     colonnes=get_nb_colonnes(plateau)
-    calque=creation_calque(plateau,pos,direction,distance_max)
+    calque=creation_calque(plateau,pos,direction,distance_max,passemuraille)
     if calque!=None:
         dico_distance=dict()
         for i in range (lignes):
@@ -457,17 +507,28 @@ def analyse_plateau(plateau, pos, direction, distance_max):
                     fantomes=case.get_fantomes(case_actuel)
                     objet=case.get_objet(case_actuel)
                     if objet!=const.AUCUN:
-                        dico_distance["objets"]=dico_distance.get("objets",[]).append((valeur,objet))
+                        dico_distance["objets"]=dico_distance.get("objets",[])
+                        dico_distance["objets"].append((valeur,objet))
                     for pac in pacmans:
-                        dico_distance["pacmans"]=dico_distance.get("pacmans",[]).append((valeur,pac))
+                        dico_distance["pacmans"]=dico_distance.get("pacmans",[])
+                        dico_distance["pacmans"].append((valeur,pac))
                     for fan in fantomes:
-                        dico_distance["fantomes"]=dico_distance.get("fantomes",[]).append((valeur,fan))
+                        dico_distance["fantomes"]=dico_distance.get("fantomes",[])
+                        dico_distance["fantomes"].append((valeur,fan))
         return dico_distance
     else:
         return None
                     
-    
-        
+def oppose(direction):
+    if direction == 'N':
+        return 'S'
+    if direction == 'S':
+        return 'N'
+    if direction == 'O':
+        return 'E'
+    if direction == 'E':
+        return 'O'
+
 
 def prochaine_intersection(plateau,pos,direction):
     """calcule la distance de la prochaine intersection
@@ -482,19 +543,26 @@ def prochaine_intersection(plateau,pos,direction):
         int: un entier indiquant la distance à la prochaine intersection
              -1 si la direction mène à un cul de sac.
     """
+    
     distance = 0
     pos_debut = pos_arrivee(plateau,pos,direction)
     pos_actuelle = pos_debut
+    back = oppose(direction)
     while len(directions_possibles(plateau,pos_actuelle)) == 2:
-        distance += 1
-        pos_actuelle = pos_arrivee(plateau,pos_actuelle,direction)
-        
+        if direction in directions_possibles(plateau,pos_actuelle):
+            pos_actuelle = pos_arrivee(plateau,pos_actuelle,direction)
+            distance += 1
+        else:
+            for dir in directions_possibles(plateau,pos_actuelle):
+                if dir != back:
+                    back = oppose(dir)
+                    pos_actuelle = pos_arrivee(plateau,pos_actuelle,dir)
+                    distance += 1
     if directions_possibles(plateau,pos_actuelle) == direction:   
         distance = -1
     
     return distance
     
-
 # A NE PAS DEMANDER
 def plateau_2_str(plateau):
         res = str(get_nb_lignes(plateau))+";"+str(get_nb_colonnes(plateau))+"\n"
@@ -527,3 +595,4 @@ def plateau_2_str(plateau):
             res += str(fantome)+";"+str(lig)+";"+str(col)+"\n"
         return res
 
+#fdsfdsfsdfsddfdsf
