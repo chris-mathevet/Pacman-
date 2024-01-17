@@ -56,7 +56,8 @@ def mon_IA(ma_couleur,carac_jeu, plan, les_joueurs):
     # IA complètement aléatoire
     dir_p=  random.choice("NESO")
     #dir_f=  random.choice("NESO")
-    dir_f=fantomes.IA_Fantome(joueurs,ma_couleur.lower(),le_plateau,le_plateau["fantomes"][ma_couleur.lower()],distance=10)
+    dir_f=fantomes.IA_Fantome(joueurs,ma_couleur.lower(),le_plateau,le_plateau["fantomes"][ma_couleur.lower()])
+    print("direction : ", dir_f)
     return dir_p+dir_f          
 
 if __name__=="__main__":
