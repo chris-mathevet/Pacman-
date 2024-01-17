@@ -87,7 +87,8 @@ def pos_sud(plateau, pos):
 
 
 def pos_arrivee(plateau,pos,direction):
-    """ calcule la position d'arrivée si on part de pos et qu'on va dans
+    """ Complexité: O(1)
+    calcule la position d'arrivée si on part de pos et qu'on va dans
     la direction indiquée en tenant compte que le plateau est un tore
     si la direction n'existe pas la fonction retourne None
     Args:
@@ -98,20 +99,21 @@ def pos_arrivee(plateau,pos,direction):
     Returns:
         None|tuple: None ou une paire d'entiers indiquant la position d'arrivée
     """
-    pos_fin = None
-    match direction:
-        case"N":
-            pos_fin = pos_nord(plateau,pos)
-        case "S":
-            pos_fin = pos_sud(plateau,pos)
-        case "O":
-            pos_fin = pos_ouest(plateau,pos)
-        case "E":
-            pos_fin = pos_est(plateau,pos)
-    return pos_fin
+    pos_fin = None # O(1)
+    match direction:# O(1)
+        case"N": # O(1)
+            pos_fin = pos_nord(plateau,pos) # O(1)
+        case "S": # O(1)
+            pos_fin = pos_sud(plateau,pos) # O(1)
+        case "O": # O(1)
+            pos_fin = pos_ouest(plateau,pos) # O(1)
+        case "E": # O(1)
+            pos_fin = pos_est(plateau,pos) # O(1)
+    return pos_fin # O(1)
 
 def get_case(plateau, pos):
-    """retourne la case qui se trouve à la position pos du plateau
+    """Complexité: O(1)
+    retourne la case qui se trouve à la position pos du plateau
 
     Args:
         plateau (dict): le plateau considéré
@@ -120,7 +122,7 @@ def get_case(plateau, pos):
     Returns:
         dict: La case qui se situe à la position pos du plateau
     """
-    return plateau["matrice"][pos[0]][pos[1]]
+    return plateau["matrice"][pos[0]][pos[1]] # O(1)
 
 def get_objet(plateau, pos):
     """retourne l'objet qui se trouve à la position pos du plateau
@@ -411,7 +413,8 @@ def case_vide(plateau):
 
 
 def directions_possibles(plateau,pos,passemuraille=False):
-    """ retourne les directions vers où il est possible de se déplacer à partir
+    """ Complexité: O(1)
+        retourne les directions vers où il est possible de se déplacer à partir
         de la position pos
 
     Args:
@@ -423,12 +426,12 @@ def directions_possibles(plateau,pos,passemuraille=False):
         str: une chaine de caractères indiquant les directions possibles
               à partir de pos
     """
-    directions_pos=""
-    for direction in "NESO":
-        new_pos=pos_arrivee(plateau,pos,direction)
-        if (not case.est_mur(get_case(plateau,new_pos))) or passemuraille:      
-            directions_pos=directions_pos+direction
-    return directions_pos
+    directions_pos="" # O(1)
+    for direction in "NESO": # O(4)
+        new_pos=pos_arrivee(plateau,pos,direction) # O(1)
+        if (not case.est_mur(get_case(plateau,new_pos))) or passemuraille: # O(1)  
+            directions_pos=directions_pos+direction  # O(1)
+    return directions_pos # O(1)
 
 #---------------------------------------------------------#
 

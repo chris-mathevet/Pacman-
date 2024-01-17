@@ -28,7 +28,8 @@ def Case(mur=False, objet=const.AUCUN, pacmans_presents=None, fantomes_presents=
 
 
 def est_mur(case):
-    """indique si la case est un mur ou non
+    """Complexité: O(1)
+    indique si la case est un mur ou non
 
     Args:
         case (dict): la case considérée
@@ -36,13 +37,14 @@ def est_mur(case):
     Returns:
         bool: True si la case est un mur et False sinon
     """
-    return case["mur"]
+    return case["mur"] # O(1)
 
 
 
 
 def get_objet(case):
-    """retourne l'identifiant de l'objet qui se trouve sur la case. const.AUCUN indique l'absence d'objet.
+    """Complexité: O(1)
+        retourne l'identifiant de l'objet qui se trouve sur la case. const.AUCUN indique l'absence d'objet.
 
     Args:
         case (dict): la case considérée
@@ -50,11 +52,12 @@ def get_objet(case):
     Returns:
         str: l'identifiant de l'objet qui se trouve sur la case.
     """
-    return case["objet"]
+    return case["objet"] # O(1)
 
 
 def get_pacmans(case):
-    """retourne l'ensemble des pacmans qui sont sur la case
+    """Complexité: O(1)
+    retourne l'ensemble des pacmans qui sont sur la case
 
     Args:
         case (dict): la case considérée
@@ -62,13 +65,14 @@ def get_pacmans(case):
     Returns:
         set: l'ensemble des identifiants de pacmans présents su la case.
     """
-    if case["pacmans_presents"]!=None:
-        return case["pacmans_presents"]
-    else:
-        return set()
+    if case["pacmans_presents"]!=None: # O(1)
+        return case["pacmans_presents"] # O(1)
+    else: # O(1) 
+        return set() # O(1)
 
 def get_fantomes(case):
-    """retourne l'ensemble des fantomes qui sont sur la case
+    """Complexité: O(1)
+    retourne l'ensemble des fantomes qui sont sur la case
 
     Args:
         case (dict): la case considérée
@@ -76,15 +80,16 @@ def get_fantomes(case):
     Returns:
         set: l'ensemble des identifiants de fantomes présents su la case.
     """
-    if case["fantomes_presents"]!=None:
-        return case["fantomes_presents"]
-    else:
-        return set()
+    if case["fantomes_presents"]!=None: # O(1)
+        return case["fantomes_presents"] # O(1)
+    else: # O(1)
+        return set() # O(1)
 
 
 
 def get_nb_pacmans(case):
-    """retourne le nombre de pacmans présents sur la case
+    """Complexité: O(1)
+    retourne le nombre de pacmans présents sur la case
 
     Args:
         case (dict): la case considérée
@@ -92,11 +97,12 @@ def get_nb_pacmans(case):
     Returns:
         int: le nombre de pacmans présents sur la case.
     """
-    return len(get_pacmans(case))
+    return len(get_pacmans(case)) # O(1)
     
 
 def get_nb_fantomes(case):
-    """retourne le nombre de fantomes présents sur la case
+    """Complexité: O(1)
+    retourne le nombre de fantomes présents sur la case
 
     Args:
         case (dict): la case considérée
@@ -104,7 +110,7 @@ def get_nb_fantomes(case):
     Returns:
         int: le nombre de fantomes présents sur la case.
     """
-    return len(get_fantomes(case))
+    return len(get_fantomes(case)) # O(1)
 
 def poser_objet(case, objet):
     """Pose un objet sur la case. Si un objet était déjà présent ce dernier disparait.
