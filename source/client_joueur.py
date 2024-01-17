@@ -26,6 +26,8 @@ import pacman
 
 prec='X'
 
+
+
 def mon_IA(ma_couleur,carac_jeu, plan, les_joueurs):
     """ Cette fonction permet de calculer les deux actions du joueur de couleur ma_couleur
         en fonction de l'état du jeu décrit par les paramètres. 

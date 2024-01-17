@@ -522,7 +522,8 @@ class Jeu(object):
         self.duree_totale=duree_totale
         self.duree_actuelle=0
         self.nb_joueurs=0
-
+        self.fantomes_repus=set()
+        self.fantomes_repus_prec=set()
 
     def jeu_2_str(self,separateur=";"):
         res=str(self.duree_actuelle)+separateur+str(self.duree_totale)+'\n'
@@ -635,6 +636,7 @@ class Jeu(object):
                 res+="@"+couleur+"@"+" a été attaqué par le fantome @"+fan+"@\n"
                 _fonction_27(le_joueur,-const.POINTS_BATAILLE)
                 _fonction_27(self.les_joueurs[fan.upper()],const.POINTS_BATAILLE)
+                self.fantomes_repus.add(fan)
         return res
 
     def executer_deplacer_fantome(self,couleur,direction):
@@ -642,8 +644,10 @@ class Jeu(object):
         coul_fan=couleur.lower()
         pos_fan=_fonction_24(le_joueur)
         res=""
+        if coul_fan in self.fantomes_repus_prec:
+            return "@"+coul_fan+"@ digère\n"
         if self.est_statufie(pos_fan):
-            return "@"+couleur+"@ est statufié\n"
+            return "@"+coul_fan+"@ est statufié\n"
         if direction not in "NESO":
             _fonction_27(le_joueur,-const.PENALITE)
             res+="@"+couleur+"@"+" a donné une mauvaise direction "+direction+"\n"
@@ -660,11 +664,11 @@ class Jeu(object):
                                             pos_fan,direction)
 
         if pos_arrivee==None:
-            res+="@"+couleur+"@"+" a fait un faux mouvement\n"
+            res+="@"+coul_fan+"@"+" a fait un faux mouvement\n"
             _fonction_27(le_joueur,const.PENALITE)
             if _fonction_28(le_joueur)<=0:
                 pos_arr=_fonction_53(self.plateau)
-                res+="@"+couleur+"@"+" a été téléporté en"+str(pos_arr)+"\n"
+                res+="@"+coul_fan+"@"+" a été téléporté en"+str(pos_arr)+"\n"
                 _fonction_49(self.plateau,coul_fan,pos_fan)
                 _fonction_43(self.plateau,coul_fan,pos_arr)
                 _fonction_26(le_joueur, pos_arr)
@@ -674,17 +678,20 @@ class Jeu(object):
 
         for pac in _fonction_4(_fonction_40(self.plateau,pos_arrivee)):
             if _fonction_22(self.les_joueurs[pac],const.GLOUTON)>0:
-                res+="@"+couleur+"@"+" a été attaqué par le pacman @"+pac+"@\n"
+                res+="@"+coul_fan+"@"+" a été attaqué par le pacman @"+pac+"@\n"
                 _fonction_27(le_joueur,-const.POINTS_BATAILLE)
                 _fonction_27(self.les_joueurs[pac],const.POINTS_BATAILLE)
             else:
-                res+="@"+couleur+"@"+" a attaqué le pacman @"+pac+"@\n"
+                res+="@"+couleur+"@"+" a attaqué le fantome @"+coul_fan+"@\n"
                 _fonction_27(le_joueur,const.POINTS_BATAILLE)
                 _fonction_27(self.les_joueurs[pac],-const.POINTS_BATAILLE)
+                self.fantomes_repus.add(coul_fan)
         return res
 
     def fin_tour(self):
         self.duree_actuelle+=1
+        self.fantomes_repus_prec=self.fantomes_repus
+        self.fantomes_repus=set()
         msg=""
         if self.duree_actuelle>=self.duree_totale:
             self.duree_actuelle=self.duree_totale

@@ -188,6 +188,7 @@ class JeuThread(threading.Thread):
                     if msg!='':
                         print(msg,end='')
                     self.table_clients.envoyer_jeu(AFFICHEUR,msg)
+                    print(actions)
                     msg=self.table_clients.le_jeu.executer_deplacer_fantome(coul,actions[1])
                     if msg!='':
                         print(msg,end='')
@@ -339,7 +340,7 @@ if __name__ == '__main__':
     parser.add_argument("--port", dest="port", help="port de connexion", type=int, default=1111)
     # parser.add_argument("--empl_tournoi", dest="empl_tournoi", help="emplacement du tournoi", type=str, default='.')
     parser.add_argument("--nom_partie", dest="nom_partie", help="nom de la partie", type=str, default='score.csv')
-    parser.add_argument("--duree", dest="duree", help="nombre de tours de la partie", type=int, default=100)
+    parser.add_argument("--duree", dest="duree", help="nombre de tours de la partie", type=int, default=1000)
     parser.add_argument("--map", dest="map", help="fichier contenant la map", type=str, default='cartes/test1.txt')
     # parser.add_argument('joueurs', metavar='joueur', type=str, nargs='+', help='les joueurs')
     

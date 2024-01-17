@@ -186,11 +186,8 @@ def faux_mouvement(joueur):
         int: le nombre de faux mouvements autorisés restants
     """
     
-    joueur['nb_faux_mouvements'] = get_nb_faux_mvt(joueur) -1
-    if joueur['nb_faux_mouvements'] <=-2:
-        return 0
-    else:
-        return joueur['nb_faux_mouvements'] 
+    joueur['nb_faux_mouvements'] -= 1
+    return joueur['nb_faux_mouvements']
     
 
 

@@ -1,29 +1,10 @@
 # Fichier pour l'IA du fantome
 
-
-
-import argparse
-import random
-import client
 import const
 import plateau as plat
 import case
 import joueur
-
-
-test1="20;30\n##############################\n.......##..........##.........\n######.##.#####.##.##.##.#####\n######.##.#####.##.##.##.#####\n#.........#####.##.##.##.#####\n..#######.......##.##.##......\n#.#######.#####.##....##.#####\n#.##......#####.########.#####\n#.##.####.##....########....##\n#.##.####.##.##..........##.##\n#......##.##.#####.##.#####.##\n######.##.##.#####.##.#####.##\n..####.##..........##.........\n#......##.#####.##.##.##.#####\n#.####.##.#####.##.##.##.#####\n#.####....##....##.##.##....##\n#...##.##.##.##.##.##.##.##.##\n..#.##.##....##..........##...\n###....#####....###..###....##\n##############################\n5\nA;1;2\nB;1;22\nC;3;6\nD;10;21\nE;16;1\n5\na;7;5\nb;10;1\nc;10;12\nd;7;5\ne;3;6\n"
-test3="20;30\n##############################\n.......##.....@....##.........\n######.##.#####.##.##.##.#####\n######.##.#####.##.##.##.#####\n#.........#####.##.##.##.#####\n#.#######....!..##.##.##......\n#.#######.#####.##....##.#####\n#.##......#####.########.#####\n#.##.####.##....########.$..##\n#.##.####.##.##..~.......##.##\n#......##.##.#####.##.#####.##\n######.##.##.#####.##.#####.##\n######.##..........##..&......\n#......##.#####.##.##.##.#####\n#.####.##.#####.##.##.##.#####\n#.####....##....##.##.##....##\n#...##.##.##.##.##.##.##.##.##\n###.##.##....##..........##...\n###.##.#####.##.###..###.##.##\n###.##.#####.##.###..###.##.##\n5\nA;1;2\nB;1;22\nC;3;6\nD;10;21\nE;16;1\n5\na;7;5\nb;10;1\nc;10;12\nd;7;5\ne;3;6\n"
-
-
-
-
-plateau1=plat.Plateau(test1)
-plateau3=plat.Plateau(test3)
-
-def get_joueur(joueurs,couleur):
-    return joueurs[couleur]
-
-
+import API_IA as IA
 
 def creation_calque(plateau,pos,distance_max):
     """Creer un calque sur le principe de l'innondation, 
@@ -40,17 +21,17 @@ def creation_calque(plateau,pos,distance_max):
     lignes=plat.get_nb_lignes(plateau)
     colonnes=plat.get_nb_colonnes(plateau)
     calque=[[0 for __ in range(colonnes)]for _ in range(lignes)]
-    calque[pos[0]][pos[1]]=1
+    calque[pos[0]][pos[1]]=0
     if pos!=None and (not case.est_mur(plat.get_case(plateau,pos))):
         positions={pos}
-        innondation=2
+        innondation=1
         while len(positions)!=0 and innondation<=distance_max:
             pos_cases_voisines=set()
             for position in positions:
                 directions_vois=(plat.directions_possibles(plateau,position))
                 for directions_ in directions_vois:
                     new_pos=plat.pos_arrivee(plateau,position,directions_)
-                    if calque[new_pos[0]][new_pos[1]]==0:
+                    if calque[new_pos[0]][new_pos[1]]==0 and new_pos!=pos:
                         pos_cases_voisines.add(new_pos)
             positions=set()
             for voisins in pos_cases_voisines:
@@ -134,6 +115,8 @@ def retirer_analyse(analyse,fantome,pacmans_danger,analyse_bis=False):
         for objets in analyse["objets"]:
             if objets[1]!=const.VITAMINE:
                 nouvelle_analyse["objets"].append(objets)
+    else:
+        nouvelle_analyse["objets"]=analyse["objets"]
     for pacmans in analyse["pacmans"]:
         if pacmans[1]!=fantome.upper() and pacmans[1] not in pacmans_danger:
             nouvelle_analyse["pacmans"].append(pacmans)
@@ -164,8 +147,9 @@ def fabrique_chemin(plateau, position_depart, position_arrivee,distance_arrivee)
             if valeur_voisin!=0 and valeur_voisin<distance_min:
                 distance_min=valeur_voisin
                 position_actuel=pos_voisin
-    if position_actuel!=position_depart:
-        chemin.append(position_actuel)
+        if position_actuel!=position_depart:
+            chemin.append(position_actuel)
+    print(chemin)
     return chemin
 
 def prochaine_position(plateau, position_depart, position_arrivee,distance_arrivee):
@@ -182,63 +166,7 @@ def prochaine_position(plateau, position_depart, position_arrivee,distance_arriv
     """    
     return fabrique_chemin(plateau, position_depart, position_arrivee,distance_arrivee)[-1]
 
-#analyse=analyse_plateau_bis(plateau3,(3,6),10)
-#print(analyse)
-#print(" ")
-#new_analyse=retirer_analyse(analyse,'e')
-#print(new_analyse)
-#chemin=fabrique_chemin(plateau3,(3,6),(5,13),10)
-#print(chemin)
-
-
-
-######################################################################
-#  Ajout de Julian 
-######################################################################
-def choix_distance_pacmans(plateau, tuple_donnee,positon_fantome):
-    
-    pos= tuple_donnee[2]
-    distance = tuple_donnee[0]
-    return prochaine_position(plateau,positon_fantome, pos, distance)
-    
-def trouver_direction(pos_init, pos_arrivee):
-    direction_str = ""
-    pos_init_x,pos_init_y = pos_init
-    pos_arrivee_x,pos_arrivee_y = pos_arrivee 
-
-    diff_x = pos_init_x-pos_arrivee_x
-    diff_y = pos_init_y-pos_arrivee_y
-
-    # (0, +1) Nord
-    # (0, -1) Sud
-    # (+1, 0) Est
-    # (-1, 0) Ouest
-    match (diff_x, diff_y):
-        case (0,1):
-            direction_str = "N"
-        case (0,-1):
-            direction_str = "S"
-        case (1,0):
-            direction_str = "E"
-        case (-1,0):
-            direction_str = "O"
-    print("init : ",pos_init, ", arrivee: ",pos_arrivee)
-    print(diff_x,diff_y)
-    return direction_str
-
-print("par de ",(4, 7), "a", (4, 6)," donc vers le nord",trouver_direction((4, 7), (4, 6)))
-print("par de ",(4, 6), "a", (4, 7)," donc vers le Sud",trouver_direction((4, 6), (4, 7)))
-print("par de ",(5, 6), "a", (4, 6)," donc vers le Est",trouver_direction((5,6), (4, 6)))
-print("par de ",(3, 6), "a", (4, 6)," donc vers le Ouest",trouver_direction((3, 6), (4, 6)))
-
-# print(tri_distance_pacman({'objets': [(10, '!', (5, 13))], 'pacmans': [(7, 'A', (1, 2)), (1, 'C', (3, 6))]}))
-
-
-
- 
 ####################################  PARTIE ANALYSE DES PACMANS  ####################################
-
-
 
 def pacmans_glouton(analyse,joueurs):
     """A partir d'une analyse, renvoie un ensemble des pacmans qui ont le pouvoir glouton
@@ -249,7 +177,7 @@ def pacmans_glouton(analyse,joueurs):
     """    
     pac_danger=set()
     for _,pac,_ in analyse["pacmans"]:
-        info_joueur=get_joueur(joueurs,pac)
+        info_joueur=IA.get_joueur(joueurs,pac)
         if joueur.get_duree(info_joueur,const.GLOUTON)!=0:
             pac_danger.add(pac)
     return pac_danger
@@ -276,7 +204,6 @@ def glouton_proximité(analyse_pac):
                 pacman_glouton.add(pacman)
     return pacman_glouton
 
-
 def pacmans_dangereux(glouton_prox,a_glouton):
     """Renvoie un ensemble des pacmans dangereux, 
     à partir des ensembles de pacmans qui on l'objet glouton et 
@@ -291,31 +218,10 @@ def pacmans_dangereux(glouton_prox,a_glouton):
     """    
     return glouton_prox|a_glouton
     
-
 ####################################  FIN PARTIE ANALYSE DES PACMANS  ####################################
 
-
-                
-def tri_proche(plateau,pos_fantome,analyse):
-    """_summary_
-
-    Args:
-        plateau (dict): plateau de jeu
-        pos_fantome (tuple): position du fantome sur le plateau
-
-    Return une liste dans l'ordre croissant des pacmans les plus proches du fantomes
-    """    
-    def critere(nom):
-        return dico_dist[nom]
-    dico_dist = dict()
-    for pac,stats in analyse_pacman(analyse,plateau):
-        dist = abs(stats["position_pac"][0] - pos_fantome[0]) + abs(stats["position_pac"][1] - pos_fantome[1])
-        dico_dist[pac] = dist
-    dist_min = sorted(dico_dist, key=critere)
-    return dist_min
-        
-
-
+def est_vide(analyse):
+    return len(analyse["pacmans"])==0 and len(analyse["objets"])==0
 
 def choix(dernière_analyse,joueurs):
     """_summary_
@@ -336,7 +242,7 @@ def choix(dernière_analyse,joueurs):
             Returns:
                 int: ratio entre distance et valeur, afin de faire un choix par la suite
             """    
-            return (pacman[0]+joueur.get_nb_points(get_joueur(joueurs,pacman[1]))) // 2 *100
+            return (joueur.get_nb_points(IA.get_joueur(joueurs,pacman[1]))) // pacman[0],pacman[0]
         tri=max(dernière_analyse["pacmans"],key=ratio_pac)
     else:
         def ratio_objet(objet):
@@ -348,26 +254,11 @@ def choix(dernière_analyse,joueurs):
             Returns:
                 int: ratio entre distance et valeur, afin de faire un choix par la suite
             """            
-            return (objet[0]+const.PROP_OBJET[objet[1]][0]) //2 *100
+            return (const.PROP_OBJET[objet[1]][0]) // objet[0],objet[0]
         tri= max(dernière_analyse["objets"],key=ratio_objet)
     return tri
 
-
-#joueur1 ="A;152;3;5;4;0;12;5;0;9;Greedy"
-#joueur2 ="B;-8;0;5;4;6;4;0;0;0;iut'o"
-#joueur3="C;14;2;6;4;23;1;3;2;1;Ghost"
-#analyse_test={"objets":[(5,const.IMMOBILITE,(1,1))],"pacmans":[(3,"A",(5,4)),(3,"B",(5,4)),(4,"C",(6,4))]}
-#joueurs=dict()
-#joueur1=joueur.joueur_from_str(joueur1)
-#joueur2=joueur.joueur_from_str(joueur2)
-#joueur3=joueur.joueur_from_str(joueur3)
-#joueurs[joueur.get_couleur(joueur1)]=joueur1
-#joueurs[joueur.get_couleur(joueur2)]=joueur2
-#joueurs[joueur.get_couleur(joueur3)]=joueur3
-#print(choix(analyse_test,joueurs))
-
-
-def IA_Fantome(joueurs,ident_fantome,plateau,position_fantome,distance=20):
+def IA_Fantome(joueurs,ident_fantome,plateau,position_fantome,distance=2000):
     ### Partie analyse ###
     pacmans_danger=set()
     analyse_fantome=analyse_plateau_bis(plateau,position_fantome,distance)
@@ -375,7 +266,10 @@ def IA_Fantome(joueurs,ident_fantome,plateau,position_fantome,distance=20):
     pacmans_danger=pacmans_dangereux(glouton_proximité(analyse_pacman(analyse_fantome,plateau)),pacmans_glouton(analyse_fantome,joueurs))
     analyse_fantome=retirer_analyse(analyse_fantome,ident_fantome,pacmans_danger,True)
     ### On détermine le choix du fantome
-    distance_choix,_,position_choix=choix(analyse_fantome,joueurs)
-    prochaine_pos=prochaine_position(plateau,position_fantome,position_choix,distance_choix)
-    return trouver_direction(position_fantome,prochaine_pos)
-
+    print(ident_fantome,position_fantome,analyse_fantome)
+    if not est_vide(analyse_fantome):
+        distance_choix,_,position_choix=choix(analyse_fantome,joueurs)
+        prochaine_pos=prochaine_position(plateau,position_fantome,position_choix,distance_choix)
+        return IA.trouver_direction(position_fantome,prochaine_pos)
+    else:
+        return IA.random_possible(plateau,position_fantome)
