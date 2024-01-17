@@ -139,7 +139,7 @@ def analyse_plateau_bis(plateau, pos, distance_max):
     else:
         return None
 
-def retirer_analyse(analyse,fantome,pacmans_danger,analyse_bis=False):
+def retirer_analyse(analyse,couleur,pacmans_danger,analyse_bis=False,PAC=False):
     """A partir d'une analyse (via analyse_plateau), retire les infos inutiles au fantome donné,
         c'est à dire, les autres fantomes, le pacman de notre équipe et les vitamines
 
@@ -150,24 +150,29 @@ def retirer_analyse(analyse,fantome,pacmans_danger,analyse_bis=False):
                         (dist,ident,pos) où dist est la distance de l'objet, du pacman ou du fantome
                                         et ident est l'identifiant de l'objet, du pacman ou du fantome
                                         pos est un tuple des coordonnés de l'objet
-        fantome (str): couleur du fantome
+        couleur (str): couleur de l'equipe
         pacmans_danger(set): ensemble des pacmans dangerex (ont l'objet glouton ou l'ont près d'eux)
         analyse_bis(bool): booléens signifiant si c'est la deuxième analyse ou non (éviter redondence)
+        PAC(bool): Vrai, retire pour pacman, sinon pour fantome
 
     Returns:
         dict: nouveau dictionnaire de listes, avec les informations non nécéssaire en moins
     """    
-    nouvelle_analyse={"objets":[],"pacmans":[]}
-    if not analyse_bis:
-        for objets in analyse["objets"]:
-            if objets[1]!=const.VITAMINE:
-                nouvelle_analyse["objets"].append(objets)
+    nouvelle_analyse={"objets":[]}
+    if PAC:
+        nouvelle_analyse["fantomes"]=[]
     else:
-        nouvelle_analyse["objets"]=analyse["objets"]
-    for pacmans in analyse["pacmans"]:
-        if pacmans[1]!=fantome.upper() and pacmans[1] not in pacmans_danger:
-            nouvelle_analyse["pacmans"].append(pacmans)
-    return nouvelle_analyse
+        nouvelle_analyse["pacmans"]=[]
+        if not analyse_bis:
+            for objets in analyse["objets"]:
+                if objets[1]!=const.VITAMINE:
+                    nouvelle_analyse["objets"].append(objets)
+        else:
+            nouvelle_analyse["objets"]=analyse["objets"]
+        for pacmans in analyse["pacmans"]:
+            if pacmans[1]!=couleur.upper() and pacmans[1] not in pacmans_danger:
+                nouvelle_analyse["pacmans"].append(pacmans)
+        return nouvelle_analyse
 
 def fabrique_chemin(plateau, position_depart, position_arrivee,distance_arrivee):
     """Renvoie le plus court chemin entre position_depart position_arrivee dans le rayon de distance arrivee
@@ -248,3 +253,49 @@ def trouver_direction(pos_init, pos_arrivee):
     print("init : ",pos_init, ", arrivee: ",pos_arrivee)
     print(diff_x,diff_y)
     return direction_str
+
+
+
+def fabrique_chemin(plateau, position_depart, position_arrivee,distance_arrivee):
+    """Renvoie le plus court chemin entre position_depart position_arrivee dans le rayon de distance arrivee
+
+    Args:
+        plateau (plateau): un plateau de jeu
+        position_depart (tuple): un tuple de deux entiers de la forme (no_ligne, no_colonne) 
+        position_arrivee (tuple): un tuple de deux entiers de la forme (no_ligne, no_colonne) 
+        distance_arrivee (int) :  distance entre position_depart et position_arrivee (gràce à analyse) 
+    
+    Returns:
+        list: Une liste de positions entre position_arrivee et position_depart
+        qui représente un plus court chemin entre les deux positions
+    """
+    calque=creation_calque(plateau,position_depart,distance_arrivee)
+    chemin=[position_arrivee]
+    position_actuel=position_arrivee
+    distance_min=distance_arrivee
+    for _ in range (distance_arrivee-1):
+        dir_voisins=plat.directions_possibles(plateau,position_actuel)
+        for direction in dir_voisins:
+            pos_voisin=plat.pos_arrivee(plateau,position_actuel,direction)
+            valeur_voisin=calque[pos_voisin[0]][pos_voisin[1]]
+            if valeur_voisin!=0 and valeur_voisin<distance_min:
+                distance_min=valeur_voisin
+                position_actuel=pos_voisin
+        if position_actuel!=position_depart:
+            chemin.append(position_actuel)
+    print(chemin)
+    return chemin
+
+def prochaine_position(plateau, position_depart, position_arrivee,distance_arrivee):
+    """renvoie la prochaine position du fantome gràce à chemin
+
+    Args:
+        plateau (plateau): un plateau de jeu
+        position_depart (tuple): un tuple de deux entiers de la forme (no_ligne, no_colonne) 
+        position_arrivee (tuple): un tuple de deux entiers de la forme (no_ligne, no_colonne) 
+        distance_arrivee (int) :  distance entre position_depart et position_arrivee (gràce à analyse) 
+
+    Returns:
+        tuple: nouvelle_pos
+    """    
+    return fabrique_chemin(plateau, position_depart, position_arrivee,distance_arrivee)[-1]

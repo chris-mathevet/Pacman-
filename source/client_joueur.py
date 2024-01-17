@@ -21,7 +21,7 @@ import case
 import joueur
 
 import fantomes
-import pacman
+#import pacman
 
 
 prec='X'
