@@ -21,7 +21,7 @@ import case
 import joueur
 
 import fantomes
-#import pacman
+import pacman
 
 
 prec='X'
@@ -56,7 +56,8 @@ def mon_IA(ma_couleur,carac_jeu, plan, les_joueurs):
     le_plateau=plateau.Plateau(plan)
     
     # IA complètement aléatoire
-    dir_p=  random.choice("NESO")
+    #dir_p=  random.choice("NESO")
+    dir_p= pacman.IA_Pacman(joueurs,ma_couleur.upper(),le_plateau,le_plateau["pacmans"][ma_couleur.upper()])
     #dir_f=  random.choice("NESO")
     dir_f=fantomes.IA_Fantome(joueurs,ma_couleur.lower(),le_plateau,le_plateau["fantomes"][ma_couleur.lower()])
     print("direction : ", dir_f)

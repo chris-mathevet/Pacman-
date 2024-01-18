@@ -17,6 +17,7 @@ LES_OBJETS = '.$@~&!'
 MUR = '#'
 DIRECTIONS = 'NESO'
 
+
 NB_FAUX_MVT = 4
 PENALITE = 1
 

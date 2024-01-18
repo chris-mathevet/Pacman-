@@ -522,8 +522,6 @@ def analyse_plateau(plateau, pos, direction, distance_max,passemuraille=False):
     else:
         return None
 
-      
-
 def oppose(direction):
     if direction == 'N':
         return 'S'

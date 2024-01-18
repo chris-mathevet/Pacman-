@@ -1,7 +1,5 @@
-
-import argparse
+# Fonctions utiles aux deux IAs
 import random
-import client
 import const
 import plateau as plat
 import case
@@ -12,9 +10,9 @@ test1="20;30\n##############################\n.......##..........##.........\n##
 test2="10;10\n##########\n..##..... \n# ####!###\n#.      ##\n#.#### ###\n .##..@.. \n#.##.# ###\n#.##.# ###\n#&....~ ##\n##########\n4\nA;1;1\nB;1;8\nC;8;6\nD;6;6\n4\na;8;2\nb;3;5\nc;1;9\nd;6;4\n"
 test3="20;30\n##############################\n.......##.....@....##.........\n######.##.#####.##.##.##.#####\n######.##.#####.##.##.##.#####\n#.........#####.##.##.##.#####\n#.#######....!..##.##.##......\n#.#######.#####.##....##.#####\n#.##......#####.########.#####\n#.##.####.##....########.$..##\n#.##.####.##.##..~.......##.##\n#......##.##.#####.##.#####.##\n######.##.##.#####.##.#####.##\n######.##..........##..&......\n#......##.#####.##.##.##.#####\n#.####.##.#####.##.##.##.#####\n#.####....##....##.##.##....##\n#...##.##.##.##.##.##.##.##.##\n###.##.##....##..........##...\n###.##.#####.##.###..###.##.##\n###.##.#####.##.###..###.##.##\n5\nA;1;2\nB;1;22\nC;3;6\nD;10;21\nE;16;1\n5\na;7;5\nb;10;1\nc;10;12\nd;7;5\ne;3;6\n"
 
-plateau1=plat.Plateau(test1)
-plateau2=plat.Plateau(test2)
-plateau3=plat.Plateau(test3)
+carte = "12;12\n.#.#..#.###.\n.#.#.@#..#..\n.#.#..#..#..\n.#.####!.#..\n............\n.####..####.\n.#..#..#..#.\n....#...&.#.\n.~..#...###.\n.####.....#.\n.#.....#..#.\n.####..####.\n5\nA;0;2\nB;1;0\nC;3;11\nD;10;5\nE;4;2\n5\na;0;2\nb;10;2\nc;10;11\nd;0;2\ne;1;0\nf;1;0\n"
+perso_map="10;10\n##########\n..##..... \n# ####!###\n#.      ##\n#.#### ###\n .##..@.. \n#.##.# ###\n#.##.#####\n#&....~ ##\n##########\n4\nA;1;1\nB;1;8\nC;8;6\nD;6;6\n4\na;8;2\nb;3;5\nc;1;9\nd;6;4\n"
+
 ##########################  PLATEAU POUR TESTS  ##########################
 
 def get_joueur(joueurs,couleur):
@@ -61,8 +59,8 @@ def est_un_mur(plateau):
                 murs.add((i,j))
     return murs
 
-def creation_calque(plateau,pos,distance_max):
-    """Complexité: # O(N ?)
+def creation_calque(plateau,pos,distance_max,PASSEMURAILLE=False):
+    """Complexité: # O(N²)
         Creer un calque sur le principe de l'innondation, 
        à partir de pos en se limitant à la distance max.
 
@@ -76,15 +74,15 @@ def creation_calque(plateau,pos,distance_max):
     """    
     lignes=plat.get_nb_lignes(plateau) # O(1)
     colonnes=plat.get_nb_colonnes(plateau) # O(1)
-    calque=[[0 for __ in range(colonnes)]for _ in range(lignes)] # O(ij)
+    calque=[[0 for __ in range(colonnes)]for _ in range(lignes)] # O(I²)
     calque[pos[0]][pos[1]]=0 # O(1)
-    if pos!=None and (not case.est_mur(plat.get_case(plateau,pos))): # O(1)
+    if pos!=None and (not case.est_mur(plat.get_case(plateau,pos)) or PASSEMURAILLE): # O(1)
         positions={pos} # O(1)
         innondation=1 # O(1)
-        while len(positions)!=0 and innondation<=distance_max: # O(N)  N*(n+J)   N<=distance_max
+        while len(positions)!=0 and innondation<=distance_max: # O(N) N=distance_max
             pos_cases_voisines=set() # O(1)
             for position in positions: # O(n)
-                directions_vois=(plat.directions_possibles(plateau,position)) # O(1)
+                directions_vois=(plat.directions_possibles(plateau,position,PASSEMURAILLE)) # O(1)
                 for directions_ in directions_vois: # O(4)
                     new_pos=plat.pos_arrivee(plateau,position,directions_) # O(1)
                     if calque[new_pos[0]][new_pos[1]]==0 and new_pos!=pos: # O(1)
@@ -99,8 +97,8 @@ def creation_calque(plateau,pos,distance_max):
     else:
         return None # O(1)
 
-def analyse_plateau_bis(plateau, pos, distance_max,couleur,FANTOME=False):
-    """ Complexité: O(N*n) 
+def analyse_plateau_bis(plateau, pos, distance_max,couleur,FANTOME=False,PASSEMURAILLE=False):
+    """ Complexité: O(N²) 
     DIFFERENCE : Analyse_plateau, mais en rajoutant la position des objets, 
                     pacmans et fantomes dans le dictionnaire
         calcul les distances entre la position pos et les différents objets et
@@ -127,7 +125,7 @@ def analyse_plateau_bis(plateau, pos, distance_max,couleur,FANTOME=False):
     """ 
     lignes=plat.get_nb_lignes(plateau) # O(1)
     colonnes=plat.get_nb_colonnes(plateau) # O(1)
-    calque=creation_calque(plateau,pos,distance_max) # O(N)
+    calque=creation_calque(plateau,pos,distance_max,PASSEMURAILLE) # O(N²)
     if calque!=None: # O(1)
         dico_distance=dict() # O(1)
         dico_distance["objets"]=[] # O(1)
@@ -196,8 +194,8 @@ def trouver_direction(pos_init, pos_arrivee):
     print(diff_x,diff_y)
     return direction_str# O(1)
 
-def fabrique_chemin(plateau, position_depart, position_arrivee,distance_arrivee):
-    """Complexité: O(N)
+def fabrique_chemin(plateau, position_depart, position_arrivee,distance_arrivee,PASSEMURAILLE=False):
+    """Complexité: O(N²)
     Renvoie le plus court chemin entre position_depart position_arrivee dans le rayon de distance arrivee
 
     Args:
@@ -210,7 +208,7 @@ def fabrique_chemin(plateau, position_depart, position_arrivee,distance_arrivee)
         list: Une liste de positions entre position_arrivee et position_depart
         qui représente un plus court chemin entre les deux positions
     """
-    calque=creation_calque(plateau,position_depart,distance_arrivee) # O(N)
+    calque=creation_calque(plateau,position_depart,distance_arrivee,PASSEMURAILLE) # O(N²)
     chemin=[position_arrivee] # O(1)
     position_actuel=position_arrivee # O(1)
     distance_min=distance_arrivee # O(1)
@@ -226,7 +224,7 @@ def fabrique_chemin(plateau, position_depart, position_arrivee,distance_arrivee)
             chemin.append(position_actuel) # O(1)
     return chemin # O(1)
 
-def prochaine_position(plateau, position_depart, position_arrivee,distance_arrivee):
+def prochaine_position(plateau, position_depart, position_arrivee,distance_arrivee,PASSEMURAILLE=False):
     """ Complexité: O(N)
     renvoie la prochaine position du fantome gràce à chemin
 
@@ -239,4 +237,4 @@ def prochaine_position(plateau, position_depart, position_arrivee,distance_arriv
     Returns:
         tuple: nouvelle_pos
     """    
-    return fabrique_chemin(plateau, position_depart, position_arrivee,distance_arrivee)[-1] # O(N)
+    return fabrique_chemin(plateau, position_depart, position_arrivee,distance_arrivee,PASSEMURAILLE)[-1] # O(N)

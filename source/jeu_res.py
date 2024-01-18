@@ -361,7 +361,7 @@ def _fonction_53(id_20):
     
     while(True):
         lin=random.randint(0,id_20['_ch_12']-1)
-        col=random.randint(0,id_20['_ch_12']-1)
+        col=random.randint(0,id_20['_ch_13']-1)
         la_case=_fonction_40(id_20,(lin,col))
         if not _fonction_2(la_case) and \
             _fonction_8(la_case) in [const.AUCUN,const.VITAMINE] and\
