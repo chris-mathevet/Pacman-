@@ -192,7 +192,6 @@ def IA_Fantome(joueurs,ident_fantome,plateau,position_fantome,distance=2000):
     pacmans_danger=pacmans_dangereux(glouton_proximité(analyse_pacman(analyse_fantome,plateau)),pacmans_glouton(analyse_fantome,joueurs)) # O(N²)
     retirer_analyse(analyse_fantome,pacmans_danger) # O(4)
     ### On détermine le choix du fantome
-    print(ident_fantome,position_fantome,analyse_fantome)
     if not est_vide(analyse_fantome): # O(1) 
         distance_choix,_,position_choix=choix(analyse_fantome,joueurs) # O(N)
         prochaine_pos=IA.prochaine_position(plateau,position_fantome,position_choix,distance_choix) # O(N)

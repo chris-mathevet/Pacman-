@@ -13,8 +13,14 @@ plateau3=plat.Plateau(IA.test3)
 plateauC=plat.Plateau(IA.carte)
 plateau_perso=plat.Plateau(IA.perso_map)
 
+
+
+
+
+
 def est_un_mur(plateau):
-    """il mets dans un ensemble, l'ensemble des coordonnées ou se situe des murs 
+    """Complexité: O(N²)
+    il mets dans un ensemble, l'ensemble des coordonnées ou se situe des murs 
 
     Args:
         plateau (dict): dico du plateau de jeu
@@ -22,17 +28,18 @@ def est_un_mur(plateau):
     Returns:
         set: ensemble des coordonnées ou se situ un mur
     """
-    murs= set()
-    lignes=plat.get_nb_lignes(plateau)
-    colonnes=plat.get_nb_colonnes(plateau)
-    for i in range(lignes):
-        for j in range(colonnes):
-            if case.est_mur(plat.get_case(plateau,(i,j))):
-                murs.add((i,j))
-    return murs
+    murs= set() # O(1)
+    lignes=plat.get_nb_lignes(plateau)# O(1)
+    colonnes=plat.get_nb_colonnes(plateau)# O(1)
+    for i in range(lignes): # O(N)
+        for j in range(colonnes): # O(N)
+            if case.est_mur(plat.get_case(plateau,(i,j))): # O(1)
+                murs.add((i,j)) # O(1)
+    return murs # O(1)
 
 def cul_de_sac(plateau):
-    """il mets dans un ensemble, l'ensemble des coordonnées ou se situe des culs de sacs
+    """Complexité: O(N²)
+    il mets dans un ensemble, l'ensemble des coordonnées ou se situe des culs de sacs
 
     Args:
         plateau (dict): dico du plateau de jeu
@@ -40,18 +47,16 @@ def cul_de_sac(plateau):
     Returns:
         set: ensemble des coordonnées ou se situ un cul de sac
     """
-    pos_cul_de_sac= set()
-    lignes=plat.get_nb_lignes(plateau)
-    colonnes=plat.get_nb_colonnes(plateau)
-    for i in range (lignes):
-        for j in range(colonnes):
-            if i !=0 and j!=0 and i !=lignes-1 and j!=colonnes-1 and not len(plat.directions_possibles(plateau, (i,j), False)) != 1:
-                if (i,j) not in est_un_mur(plateau):
-                    print(len(plat.directions_possibles(plateau, (i,j), False))) 
-                    pos_cul_de_sac.add((i,j))
-            else:
-                pass
-    return pos_cul_de_sac
+    pos_cul_de_sac= set()# O(1)
+    lignes=plat.get_nb_lignes(plateau)# O(1)
+    colonnes=plat.get_nb_colonnes(plateau)# O(1)
+    for i in range (lignes): # O(N)
+        for j in range(colonnes): # O(N)
+            if i !=0 and j!=0 and i !=lignes-1 and j!=colonnes-1 and not len(plat.directions_possibles(plateau, (i,j), False)) != 1: # O(1)
+                if (i,j) not in est_un_mur(plateau): # O(1)
+                    print(len(plat.directions_possibles(plateau, (i,j), False)))  # O(1)
+                    pos_cul_de_sac.add((i,j)) # O(1)
+    return pos_cul_de_sac# O(1)
 
 
 def test():
@@ -78,7 +83,8 @@ def test():
 # test()
 
 def intersection(plateau):
-    """il mets dans un ensemble, l'ensemble des coordonnées ou se situe des intersections de la carte
+    """Complexité: O(N²)
+    il mets dans un ensemble, l'ensemble des coordonnées ou se situe des intersections de la carte
 
     Args:
         plateau (dict): dico du plateau de jeu
@@ -86,50 +92,34 @@ def intersection(plateau):
     Returns:
         set: ensemble des coordonnées ou se situ une intersection
     """
-    les_intersections= set()
-    lignes=plat.get_nb_lignes(plateau)
-    colonnes=plat.get_nb_colonnes(plateau)
-    for i in range (lignes):
-        for j in range(colonnes):
-            if i !=0 and j!=0 and i !=lignes-1 and j!=colonnes-1 and len(plat.directions_possibles(plateau, (i,j), False)) >= 3:
-                if (i,j) not in est_un_mur(plateau):
-                    les_intersections.add((i,j))
+    les_intersections= set() # O(1)
+    lignes=plat.get_nb_lignes(plateau)# O(N)
+    colonnes=plat.get_nb_colonnes(plateau)# O(N)
+    for i in range (lignes): # O(1)
+        for j in range(colonnes): # O(1)
+            if i !=0 and j!=0 and i !=lignes-1 and j!=colonnes-1 and len(plat.directions_possibles(plateau, (i,j), False)) >= 3:# O(1)
+                if (i,j) not in est_un_mur(plateau):# O(1)
+                    les_intersections.add((i,j))# O(1)
+    return les_intersections# O(1)
 
-    return les_intersections
-
-def analyse_objets(analyse):
-    """return un dict qui prends en clé la position (tuple) de l'objet, et en valeur un tuple (nom de l'objet, distance avec pacman)
-    
-    Args:
-        analyse (dict): ....
-
-    Returns:
-        dict:un dictionnaraire
-                clé(tuple):position
-                valeur(tuple): (nom de l'objet, distance avec pacman)
-
-    """
-    status = dict()
-    for (distance,nom_objet,position_objet) in analyse["objets"]:
-        status[position_objet]= (nom_objet,distance)
-    return status
-
-def fantome_present(analyse):
-    """nombre de fantome dans le perimetre definie par analyse autour du pacman
+def fantome_present(plateau,pos_objet,couleur):
+    """Complexité: O(N²)
+    Nombre de fantome dans le perimetre definie par analyse autour de l'objet
         
     Args:
-        analyse (dict): ....
-
+        plateau (dict): plateau de jeu
+        pos_objet (tuple): tuple de position de l'objet
+        couleur (str): couleur du pacman
+        
     Returns:
         int: nombre de fantome autour 
     """
-    status = set()
-    for (_,couleur,_) in analyse["fantomes"]:
-        status.add(couleur)
-    return len(status)
+    analyse = IA.analyse_plateau_bis(plateau,pos_objet,5,couleur) # O(N²)
+    return len(analyse["fantomes"])# O(1)
 
 def oppose(direction):
-    """inverse le direction
+    """Complexité: O(1)
+    inverse la direction
         
     Args:
         direction (str): une chaine de caractere composé de d'une lettre comme NSEO  
@@ -137,92 +127,221 @@ def oppose(direction):
     Returns:
         int: nombre de fantome autour 
     """
-    if direction == 'N':
-        return 'S'
-    if direction == 'S':
-        return 'N'
-    if direction == 'O':
-        return 'E'
-    if direction == 'E':
-        return 'O'
+    if direction == 'N':# O(1)
+        return 'S'# O(1)
+    if direction == 'S':# O(1)
+        return 'N'# O(1)
+    if direction == 'O':# O(1)
+        return 'E'# O(1)
+    if direction == 'E':# O(1)
+        return 'O'# O(1)
 
 def tp_urgent(plateau, pos, encercle):
+    """Complexité: O(N²)
+    _summary_
+
+    Args:
+        plateau (_type_): _description_
+        pos (_type_): _description_
+        encercle (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """    
+    les_murs = est_un_mur(plateau)# O(N²)
+    if encercle is True:# O(1)
+        for direction in const.DIRECTIONS:# O(4) 4 directions
+            pos_arrivee = plat.pos_arrivee(plateau, pos, direction)# O(1)
+            if pos_arrivee in les_murs:# O(1)
+                return (direction, pos_arrivee)# O(1)
+    else:# O(1)
+        return None# O(1)
+        
+def encercle_fantome(plateau,pos, distance_max, couleur):
     les_murs = est_un_mur(plateau)
-    if encercle is True:
-        for direction in const.DIRECTIONS:
-            pos_arrivee = plat.pos_arrivee(plateau, pos, direction)
-            if pos_arrivee in les_murs:
-                return (direction, pos_arrivee)
-    else:
-        return None
+    # print(les_murs)
+    var = IA.analyse_plateau_bis(plateau, pos, distance_max,couleur,False,False)
+    res = set()
+    # print(var)
+    for i in range(len(var)):
 
+        # print(var["fantomes"][i][2])
+        res.add(var["fantomes"][i][2]) 
+        # print(var["fantomes"][2][2])
+        print(res)
+    return les_murs | res
 
-player = joueur.joueur_from_str("A;152;3;28;0;0;12;5;0;9;Greedy")    
+# player = joueur.joueur_from_str("A;152;3;28;0;0;12;5;0;9;Greedy")    
 
  ##########################
 #  pas FINI
  ##########################
 
+def prochaine_intersection_bis(plateau,pos,direction):
+    """Complexité: O(N²)
+    calcule la distance de la prochaine intersection
+        si on s'engage dans la direction indiquée
+
+    Args:
+        plateau (dict): le plateau considéré
+        pos (tuple): une paire d'entiers donnant la position de départ
+        direction (str): la direction choisie
+
+    Returns:
+        tuple: un entier indiquant la distance à la prochaine intersection
+               un tuple de coordonné (x,y)
+    """
+    les_murs = est_un_mur(plateau)# O(N²)
+    distance = 1# O(1)
+    pos_debut = plat.pos_arrivee(plateau,pos,direction)# O(1)
+    res = [pos,pos_debut]# O(1)
+    pos_actuelle = pos_debut# O(1)
+    while len(plat.directions_possibles(plateau,pos_actuelle)) == 2 and pos_actuelle not in les_murs :# O(n)
+        if direction in plat.directions_possibles(plateau,pos_actuelle): # O(1)
+            if pos_actuelle not in les_murs: # O(1)
+                pos_actuelle = plat.pos_arrivee(plateau,pos_actuelle,direction) # O(1)    
+                res.append(pos_actuelle) # O(1)
+                distance += 1 # O(1)
+
+    return distance,res
+
 def chemin_non_cul_de_sac(plateau, cul_de_sac):
+    """Complexité: O(N)
+    renvoie le chemin d'un cul de sac a une intersection (qui permettera pas la suite de prendre la 1er valeur d'entré du chemin vers le cul de sac et donc de ne pas y aller)
 
-    final = {}
-    for co_cds in cul_de_sac:
-        for direction in const.DIRECTIONS:
-            # distance = 0
-            pos_debut = plat.pos_arrivee(plateau,co_cds,direction)
-            pos_actuelle = pos_debut
-            back = oppose(direction)
-            while len(plat.directions_possibles(plateau,pos_actuelle)) == 3:
-                if direction in plat.directions_possibles(plateau,pos_actuelle):
-                    pos_actuelle = plat.pos_arrivee(plateau,pos_actuelle,direction)
-                    if co_cds not in final.keys():
-                        final[co_cds] = []
-                        final[co_cds].append(pos_actuelle)                
-                else:
-                    for dir in plat.directions_possibles(plateau,pos_actuelle):
-                        if dir != back:
-                            back = oppose(dir)
-                            pos_actuelle = plat.pos_arrivee(plateau,pos_actuelle,dir)
-                            if co_cds not in final.keys():
+    Args:
+        plateau (dict): le plateau considéré
+        cul_de_sac (set): ensemble de coordonné qui sont des culs de sac 
+    Return:
+        dico (dict): un dictionnaire avec en clé les coordonnées du cul de sac
+                        en valeur les chemins entre la position du cul de sac et sont intersection la plus proche 
+    """
+    dico = {}  # O(1)
+    for dir in const.DIRECTIONS:  # O(4) 4 Directions
+        for co in cul_de_sac:  # O(N)
+            if co not in dico.keys(): # O(1)
+                dico[co]= [] # O(1)
+                dico[co].append(prochaine_intersection_bis(plateau, co,dir)) # O(1)
 
-                                final[co_cds] = []
-                                final[co_cds].append(pos_actuelle)
-            # if plat.directions_possibles(plateau,pos_actuelle) == direction:   
-            #     distance = -1
-                
-    return final
+            elif len(prochaine_intersection_bis(plateau, co,dir)) > len(dico[co]): # O(1)
+                dico[co]=[]
+                dico[co].append(prochaine_intersection_bis(plateau, co,dir)) # O(1)
+    return dico # O(1)
+
+def est_vide(analyse):
+    """Complexité: O(1)
+    Vérifie si les listes d'objets et de fantomes sont tous deux vides
+
+    Args:
+        analyse (dict): un dictionnaire de listes. 
+                        Les clés du dictionnaire sont 'objets', 'pacmans', 'fantomes
+                        Les valeurs du dictionnaire sont des listes de paires de la forme
+                        (dist,ident,pos) où dist est la distance de l'objet, du pacman ou du fantome
+                                        et ident est l'identifiant de l'objet, du pacman ou du fantome
+                                        pos est un tuple des coordonnés de l'objet
+
+    Returns:
+        bool: Vrai si oui, sinon Faux
+    """    
+    return len(analyse["fantomes"])==0 and len(analyse["objets"])==0 # O(1)
 
 def combinaison(analyse):
-    """Vient ajouter les tuple de la liste fantome de analyse dans celles des objets, 
+    """Complexite: O(1)
+    Vient ajouter les tuple de la liste fantome de analyse dans celles des objets, 
     et ils se comporteront comme des objets avec une identifcation '*' (rajouté dans const)  qui a une valeur de 20 points
 
     Args:
         analyse (dict): analyse
     """    
-    const.PROP_OBJET['*']=(20,0) # O(1)
     for fant in analyse["fantomes"]: # O(4) 4 joueurs max 
-        new_tuple=(fant[0],'*',fant[2]) # O(1)
-        analyse["objets"].append(new_tuple) # O(1)
+        const.PROP_OBJET[fant[1]]=(20,0)  # O(1)
+        analyse["objets"].append(fant) # O(1)
 
-def choix(analyse,GLOUTON=False):
-    def ratio_objet(objet):
-        fantomes_presents=fantome_present(analyse)
-        if not GLOUTON:
-            return const.PROP_OBJET[objet[1]][0] // objet[0] - fantomes_presents * 20, objet[0]
-        else:
-            combinaison(analyse)
-            return const.PROP_OBJET[objet[1]][0] // objet[0] + fantomes_presents * 20, objet[0]
-    tri= max(analyse["objets"],key=ratio_objet) # O(N)
-    return tri
+def choix(analyse,plateau,couleur,GLOUTON=False):
+    """Complexité: # O(N)
+    Renvoi la liste des objets (et fantome s'il peut les manger) triée en fonction du ratio valeur/distance
+
+    Args:
+        derniere_analyse (dict): un dictionnaire de listes. 
+                        Les clés du dictionnaire sont 'objets', 'pacmans', 'fantomes
+                        Les valeurs du dictionnaire sont des listes de paires de la forme
+                        (dist,ident,pos) où dist est la distance de l'objet, du pacman ou du fantome
+                                        et ident est l'identifiant de l'objet, du pacman ou du fantome
+                                        pos est un tuple des coordonnés de l'objet
+        joueurs (dict): Dictionnaire des joueurs de la partie
+
+    Returns:
+        tuple(int,str,tuple(int,int)):tuple avec distance,couleur,position
+    """    
+    def ratio_objet(objet): 
+        fantomes_presents=fantome_present(plateau,objet[2],couleur) 
+        if not GLOUTON: # O(1)
+            return const.PROP_OBJET[objet[1]][0] // objet[0] - fantomes_presents * 20, objet[0]  # O(1)
+        else:  # O(1)
+            combinaison(analyse)  # O(1)
+            return const.PROP_OBJET[objet[1]][0] // objet[0] + fantomes_presents * 20, objet[0]  # O(1)
+    return sorted(analyse["objets"],key=ratio_objet,reverse=True) # O(nlogN)
+
+def choix_bis(liste_choix,joueurs):
+    """Complexité:  O(N)
+    A partir de la liste obtenu de la fonction choix, si nous avons des fantomes dans les premiers indices, 
+    on vient renvoyer le max de cette nouvelle liste en fonction d'un ratio nombre de points/distance
+
+    Args:
+        liste_choix (list): _description_
+        joueurs (dict): dictionnaires des joueurs 
+
+    Returns:
+        tuple: tuple de meilleur objet/fantome à aller (distance,identification,position)
+    """    
+    choix_b=liste_choix[0]  # O(1)
+    if choix_b[1].isalpha():  # O(1) 
+        new_liste=[choix_b]  # O(1)
+        i=1  # O(1)
+        while liste_choix[i][1].isalpha():  # O(4) 4 joueurs max
+            new_liste.append(liste_choix[i])  # O(1)
+            i+=1  # O(1)
+        def critere(fant):
+            return (joueur.get_nb_points(IA.get_joueur(joueurs,fant[1].upper()))) // fant[0],fant[0] # O(1) 
+        return max(new_liste,key=critere)  # O(N)
+    else:
+        return choix_b  # O(1)
 
 def IA_Pacman(joueurs,ident_pac,plateau,position_pac,distance=2000):
-    Joueur_Pac=IA.get_joueur(joueurs,ident_pac)
-    Duree_pass=joueur.get_duree(Joueur_Pac,const.PASSEMURAILLE)
-    passemuraille=False
-    if Duree_pass>0:
-        passemuraille=True
-    analyse_pacman=IA.analyse_plateau_bis(plateau,position_pac,distance,ident_pac,False,passemuraille)
-    distance_choix,_,position_choix=choix(analyse_pacman)
-    #print("pacman",ident_pac, position_pac,IA.prochaine_position(plateau,position_pac,position_choix,distance_choix),"direction:",IA.trouver_direction(position_pac,IA.prochaine_position(plateau,position_pac,position_choix,distance_choix)))
-    return IA.trouver_direction(position_pac,IA.prochaine_position(plateau,position_pac,position_choix,distance_choix,passemuraille))
+    """Complexité O(N²)
+    L'IA du pacman
 
+    Args:
+        joueurs (dict): Liste de dictionnaire représentant les joueurs
+        ident_pac (str): couleur du pacman
+        plateau (dict): plateau du jeu
+        position_pac (tuple): position du pacman
+        distance (int, optional): distance pour le calque . Defaults to 2000.
+
+    Returns:
+        str: Direction du prochain mouvement du pacman N S O E
+    """    
+    Joueur_Pac=IA.get_joueur(joueurs,ident_pac)  # O(1)
+    Duree_pass=joueur.get_duree(Joueur_Pac,const.PASSEMURAILLE)  # O(1)
+    Duree_glout=joueur.get_duree(Joueur_Pac,const.GLOUTON)  # O(1)
+    passemuraille=True  # O(1)
+    glouton=True  # O(1)
+    if Duree_glout<=5:  # O(1)
+        glouton=False  # O(1)
+    ###### Gère de ne pas être dans un mur à la fin de passemuraille
+    if Duree_pass==0 or (Duree_pass<3 and not case.est_mur(plat.get_case(plateau,position_pac))): # O(1)
+        passemuraille=False # O(1)
+    if Duree_pass<4 and case.est_mur(plat.get_case(plateau,position_pac)): # O(1)
+        dir_possible=plat.directions_possibles(plateau,position_pac) # O(1)
+        if len(dir_possible)!=0: # O(1)
+            return random.choice(dir_possible) # O(1)
+    ################################################################
+    analyse_pacman=IA.analyse_plateau_bis(plateau,position_pac,distance,ident_pac,False,passemuraille) # O(N²)
+    if est_vide(analyse_pacman) or len(analyse_pacman["objets"])==0: # O(1)
+        return IA.random_possible(plateau,position_pac) # O(1)
+
+    else: # O(1)
+        distance_choix,_,position_choix=choix_bis(choix(analyse_pacman,plateau,ident_pac,glouton),joueurs) # O(N)
+        #if position_choix in chemin_non_cul_de_sac(plateau,cul_de_sac(plateau))[-2]: # O(n²)
+         #   return IA.random_possible(plateau,position_pac) # O(1)
+        return IA.trouver_direction(position_pac,IA.prochaine_position(plateau,position_pac,position_choix,distance_choix,passemuraille))  # O(N)

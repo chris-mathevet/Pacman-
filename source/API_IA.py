@@ -190,8 +190,6 @@ def trouver_direction(pos_init, pos_arrivee):
             direction_str = "E" # O(1)
         case (0,1): # O(1)
             direction_str = "O" # O(1)
-    print("init : ",pos_init, ", arrivee: ",pos_arrivee) 
-    print(diff_x,diff_y)
     return direction_str# O(1)
 
 def fabrique_chemin(plateau, position_depart, position_arrivee,distance_arrivee,PASSEMURAILLE=False):
@@ -213,7 +211,7 @@ def fabrique_chemin(plateau, position_depart, position_arrivee,distance_arrivee,
     position_actuel=position_arrivee # O(1)
     distance_min=distance_arrivee # O(1)
     for _ in range (distance_arrivee-1): # O(N)
-        dir_voisins=plat.directions_possibles(plateau,position_actuel) # O(1)
+        dir_voisins=plat.directions_possibles(plateau,position_actuel,PASSEMURAILLE) # O(1)
         for direction in dir_voisins: # O(4)
             pos_voisin=plat.pos_arrivee(plateau,position_actuel,direction) # O(1)
             valeur_voisin=calque[pos_voisin[0]][pos_voisin[1]] # O(1)
