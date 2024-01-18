@@ -1,4 +1,4 @@
-# Fichier pour l'IA du pacman
+# Fichier pour l'IA du pacmand
 
 import argparse
 import random
@@ -234,7 +234,7 @@ def trouver_direction(pos_init, pos_arrivee):
 
 
 def est_un_mur(plateau):
-    """il stock tout les murs dans un ensemble 
+    """il mets dans un ensemble, l'ensemble des coordonnées ou se situe des murs 
 
     Args:
         plateau (dict): dico du plateau de jeu
@@ -250,8 +250,6 @@ def est_un_mur(plateau):
             if case.est_mur(plat.get_case(plateau,(i,j))):
                 murs.add((i,j))
     return murs
-print(est_un_mur(plateau2))
-# print(plat.Plateau(plateau2))
 
 def cul_de_sac(plateau):
     """il mets dans un ensemble, l'ensemble des coordonnées ou se situe des culs de sacs
@@ -275,17 +273,30 @@ def cul_de_sac(plateau):
                 pass
     return pos_cul_de_sac
 
-# print(cul_de_sac(plateau1))
-print(cul_de_sac(plateau2))
-print(cul_de_sac(plateau3))
-print(cul_de_sac(plateauC))
+
 def test():
+    print(cul_de_sac(plateau1))
+    print(cul_de_sac(plateau2))
+    print(cul_de_sac(plateau3))
+    print(cul_de_sac(plateauC))
+    print(est_un_mur(plateau2))
+    print(plat.Plateau(plateau2))
+    print(intersection(plateau2))
+    print(len(intersection(plateau2)))
+    print("tp urgent, mur vers:",tp_urgent(plateau_perso, (1,6), True))  #   ('N', (0, 6))
+    print("tp urgent, mur vers:",tp_urgent(plateau_perso, (3,3), True))  #   ('N', (2, 3))
+    print("tp urgent, mur vers:",tp_urgent(plateau_perso, (8, 7), True)) #   ('N', (7, 7))
+    print("tp urgent, mur vers:",tp_urgent(plateau_perso, (8,1), True))  #   ('S', (9, 1))
+    print("tp urgent, mur vers:",tp_urgent(plateau_perso, (4,1), True))  #   ('E', (4, 2))
+    print("chemin",chemin_non_cul_de_sac(plateau_perso, cul_de_sac(plateau_perso)))
+
+
     # set= {(4, 3), (4, 9), (3, 7), (9, 2), (9, 5), (1, 3), (2, 8), (6, 2), (6, 8), (4, 8), (5, 3), (9, 1), (9, 7), (9, 4), (8, 8), (1, 2), (5, 2), (3, 8), (9, 3), (8, 7), (9, 6), (1, 4), (2, 3), (2, 9), (6, 3), (6, 9)}
     set = cul_de_sac(plateau2)
     for co in set:
         print("pour", co," on peut faire:",plat.directions_possibles(plateau2, co, False))
             
-test()
+# test()
 
 def intersection(plateau):
     """il mets dans un ensemble, l'ensemble des coordonnées ou se situe des intersections de la carte
@@ -306,27 +317,21 @@ def intersection(plateau):
                     les_intersections.add((i,j))
 
     return les_intersections
-print(intersection(plateau2))
-print(len(intersection(plateau2)))
-
-def chemin_non_cul_de_sac(plateau, cul_de_sac):
-    res = None
-    for co_cds in cul_de_sac:
-        for dir in const.DIRECTIONS:
-            plat.prochaine_intersection(plateau,co_cds,dir)
-            for co_inter in intersection(plateau):
-                res = fantomes.fabrique_chemin(plateau, co_cds,co_inter,20)
-    return res
-
-print("chemin",chemin_non_cul_de_sac(plateau_perso, cul_de_sac(plateau_perso)))
 
 
-# fabrique_chemin(plateau, position_depart, position_arrivee,distance_arrivee)
 
 
 def analyse_objets(analyse):
-    """
-    return un dict qui prends en clé la position (tuple) de l'objet, et en valeur un tuple (nom de l'objet, distance avec pacman)
+    """return un dict qui prends en clé la position (tuple) de l'objet, et en valeur un tuple (nom de l'objet, distance avec pacman)
+    
+    Args:
+        analyse (dict): ....
+
+    Returns:
+        dict:un dictionnaraire
+                clé(tuple):position
+                valeur(tuple): (nom de l'objet, distance avec pacman)
+
     """
     status = dict()
     for (distance,nom_objet,position_objet) in analyse["objets"]:
@@ -335,12 +340,79 @@ def analyse_objets(analyse):
 
 
 def fantome_present(analyse):
-    """
-    nombre de fantome dans le perimetre definie par analyse autour du pacman
+    """nombre de fantome dans le perimetre definie par analyse autour du pacman
+        
+    Args:
+        analyse (dict): ....
+
+    Returns:
+        int: nombre de fantome autour 
     """
     status = set()
     for (_,couleur,_) in analyse["fantomes"]:
         status.add(couleur)
     return len(status)
 
-def
+def oppose(direction):
+    """inverse le direction
+        
+    Args:
+        direction (str): une chaine de caractere composé de d'une lettre comme NSEO  
+
+    Returns:
+        int: nombre de fantome autour 
+    """
+    if direction == 'N':
+        return 'S'
+    if direction == 'S':
+        return 'N'
+    if direction == 'O':
+        return 'E'
+    if direction == 'E':
+        return 'O'
+
+def tp_urgent(plateau, pos, encercle):
+    les_murs = est_un_mur(plateau)
+    if encercle is True:
+        for direction in const.DIRECTIONS:
+            pos_arrivee = plat.pos_arrivee(plateau, pos, direction)
+            if pos_arrivee in les_murs:
+                return (direction, pos_arrivee)
+    else:
+        return None
+
+
+player = joueur.joueur_from_str("A;152;3;28;0;0;12;5;0;9;Greedy")    
+
+ ##########################
+#  pas FINI
+ ##########################
+
+def chemin_non_cul_de_sac(plateau, cul_de_sac):
+
+    res = []
+    final = dict()
+    back = None
+    new_dir = ""
+    for co_cds in cul_de_sac:
+        print('les cos_cds:',co_cds)
+        
+        for dir in const.DIRECTIONS:
+            print('la dir:',dir)
+            new_co = plat.pos_arrivee(plateau, co_cds, dir)
+            if len(plat.directions_possibles(plateau, new_co, False)) >=2 and new_dir != back or back is None:
+                back = oppose(dir)
+                new_dir = dir
+                print(("newdir:",new_dir, "back:", back))
+                
+                if co_cds not in final.keys():
+                    final[co_cds] = []
+                    final[co_cds].append(new_co)
+                    
+                print("final:",final)
+                res.append(new_dir)
+                
+            # plat.prochaine_intersection(plateau,co_cds,dir)
+            # for co_inter in intersection(plateau):
+            #     res = fantomes.fabrique_chemin(plateau, co_cds,co_inter,20)
+    return final

@@ -143,7 +143,7 @@ def analyse_plateau_bis(plateau, pos, distance_max,couleur,FANTOME=False):
                     fantomes=case.get_fantomes(case_actuel) # O(1)
                     objet=case.get_objet(case_actuel) # O(1)
                     if objet!=const.AUCUN: # O(1)
-                        if FANTOME and objet!=const.VITAMINE: # O(1)
+                        if FANTOME and objet!=const.VITAMINE and objet!=const.GLOUTON: # O(1)
                             dico_distance["objets"].append((valeur,objet,pos)) # O(1)
                         elif not FANTOME:
                             dico_distance["objets"].append((valeur,objet,pos)) # O(1)
